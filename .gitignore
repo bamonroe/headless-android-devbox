@@ -1,0 +1,15 @@
+# APK binaries are the store's payload, not source — keep them out of git.
+repo/apks/*.apk
+repo/icons/*
+
+# Generated catalog (regenerate with tools/reindex).
+repo/index.json
+
+# Android build artifacts
+client/.gradle/
+client/build/
+client/app/build/
+client/local.properties
+client/.kotlin/
+
+__pycache__/

@@ -1,0 +1,15 @@
+# Example Caddy site for serving the BAM Store repository.
+# Wire this in via the `caddy` skill once the hostname/DNS exist, pointing the
+# root at repo/ so index.json, apks/, and icons/ are all served as static files.
+#
+# Private repo (recommended): gate everything behind a bearer token that the
+# client sends as `Authorization: Bearer <token>`. Keep the token out of git.
+
+store.bam {
+	root * /data/bam-store/repo
+
+	@noauth not header Authorization "Bearer {$BAM_STORE_TOKEN}"
+	respond @noauth "unauthorized" 401
+
+	file_server browse
+}
