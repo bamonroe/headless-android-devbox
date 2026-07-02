@@ -42,8 +42,11 @@ object ApkInstaller {
                     }
                 }
 
-                val statusIntent = Intent(ACTION_INSTALL_STATUS)
-                    .setPackage(context.packageName)
+                // Target the receiver explicitly by component — it is a manifest
+                // receiver with no <intent-filter>, so an action-only broadcast
+                // would never be delivered (and the confirm dialog never shown).
+                val statusIntent = Intent(context, InstallResultReceiver::class.java)
+                    .setAction(ACTION_INSTALL_STATUS)
                     .putExtra(EXTRA_PACKAGE, packageName)
                 val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
                     PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT

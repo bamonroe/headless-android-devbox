@@ -18,8 +18,9 @@ class Settings(context: Context) {
         set(value) = prefs.edit().putString(KEY_TOKEN, value.trim()).apply()
 
     companion object {
-        // Placeholder hostname; wire up real DNS + Caddy once the client runs.
-        const val DEFAULT_URL = "https://store.bam/"
+        // Served as static files by Caddy over the tailnet (MagicDNS). Plain HTTP
+        // is fine: Tailscale already encrypts + authenticates the connection.
+        const val DEFAULT_URL = "http://apps.bam/"
         private const val KEY_URL = "base_url"
         private const val KEY_TOKEN = "token"
     }

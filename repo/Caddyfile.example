@@ -1,15 +1,18 @@
-# Example Caddy site for serving the BAM Store repository.
-# Wire this in via the `caddy` skill once the hostname/DNS exist, pointing the
-# root at repo/ so index.json, apks/, and icons/ are all served as static files.
+# Live Caddy site for serving the BAM Store repository over the tailnet.
 #
-# Private repo (recommended): gate everything behind a bearer token that the
-# client sends as `Authorization: Bearer <token>`. Keep the token out of git.
-
-store.bam {
-	root * /data/bam-store/repo
-
-	@noauth not header Authorization "Bearer {$BAM_STORE_TOKEN}"
-	respond @noauth "unauthorized" 401
-
-	file_server browse
-}
+# This is managed through the `caddyedit` Record API (see the `caddy` skill), not
+# hand-edited — the block below documents what that record installs into
+# /etc/caddy/Caddyfile:
+#
+#     apps.bam:80 {
+#         root * /data/bam-store/repo
+#         file_server
+#     }
+#
+# Plain HTTP is intentional: everything is reached over Tailscale, which already
+# encrypts and authenticates the connection, so TLS would just re-wrap an
+# encrypted tunnel. The client's default base URL is http://apps.bam/.
+#
+# No bearer token is set — access is limited to the tailnet by Tailscale ACLs. If
+# you later want per-app gating, add a matcher that checks
+# `Authorization: Bearer <token>` and have the client send the same token.
