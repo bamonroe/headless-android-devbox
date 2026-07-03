@@ -10,6 +10,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
+/** Material3 theme wrapper; uses dynamic color (Material You) on Android 12+. */
 @Composable
 fun BamStoreTheme(
     dark: Boolean = isSystemInDarkTheme(),

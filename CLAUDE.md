@@ -8,7 +8,7 @@ A private, self-hosted Android app store — a personal F-Droid. It distributes 
 apps *the owner builds* to their own Pixel devices. Two independent pieces:
 
 - **`client/`** — a native Kotlin + Jetpack Compose Android app (`com.bam.store`)
-  that fetches a catalog over HTTPS, downloads APKs, and installs them via the
+  that fetches a catalog over HTTP(S), downloads APKs, and installs them via the
   platform `PackageInstaller`.
 - **`repo/`** + **`tools/`** — a *static* repository (a directory of APKs + a
   generated `index.json`) and a Python CLI that publishes into it. No server code,
@@ -38,6 +38,17 @@ sync — a field rename touches both `storelib.py` (`AppMeta`) and `Models.kt`.
 
 `apk`/`icon` are **repo-relative**; the client resolves them against its
 configured base URL. One entry per package (highest `versionCode` wins).
+
+### What's committed vs. generated
+
+`index.json`, the APK binaries (`repo/apks/*.apk`), and extracted icons
+(`repo/icons/*`) are all **gitignored** — they are the store's payload/derived
+artifacts, regenerable from the APKs with `tools/reindex`. What *is* committed is
+each APK's **changelog sidecar**: `repo/apks/<pkg>-<versionCode>.json`, a tiny
+`{"changelog": "…"}` file that `tools/publish --changelog` writes and `reindex`
+reads back so changelog text survives an index rebuild even though the binaries
+don't live in git. So: to preserve a changelog, keep its sidecar; to change one,
+edit the sidecar and re-run `tools/reindex`.
 
 ## Common commands
 
@@ -92,7 +103,12 @@ install requires the user to confirm a system dialog. The flow spans three files
 
 1. `data/RepoClient.kt` streams the APK into `cacheDir`.
 2. `install/ApkInstaller.kt` opens a `PackageInstaller` session, writes the APK,
-   and commits with a `PendingIntent` (must be `FLAG_MUTABLE` on API 31+).
+   and commits with a `PendingIntent` (must be `FLAG_MUTABLE` on API 31+). The
+   status `Intent` **must name `InstallResultReceiver` by explicit component**
+   (`Intent(context, InstallResultReceiver::class.java)`) — the receiver is a
+   manifest receiver with no `<intent-filter>`, so an action-only broadcast is
+   silently never delivered, the confirm dialog never launches, and the install
+   hangs after download. (This was a real bug; don't reintroduce it.)
 3. `install/InstallResultReceiver.kt` receives the session callback. The normal
    path is `STATUS_PENDING_USER_ACTION` → it launches the OS confirm dialog.
    Terminal success/failure is republished on the process-static
@@ -105,8 +121,29 @@ state (`PackageManager.getPackageInfo`).
 
 ## Serving the repo
 
-`repo/Caddyfile.example` is the starting point. The client defaults to the
-placeholder `https://store.bam/` (`data/Settings.kt`); real DNS + Caddy get wired
-up with the `dns` and `caddy` skills once a hostname is chosen. For a private repo,
-gate it behind a bearer token — the client sends `Authorization: Bearer <token>`
-on every request (index, APK, and icon) when a token is set in its settings.
+**Live deployment:** the repo is served at **`http://apps.bam/`** over the tailnet
+by a Caddy static-file record:
+
+```
+apps.bam:80 {
+	root * /data/bam-store/repo
+	file_server
+}
+```
+
+That record is managed through the **`caddyedit` Record API (the `caddy` skill)**,
+not by hand-editing `/etc/caddy/Caddyfile` — to change the route (port, path, add a
+token matcher), mutate the `apps.bam:80` record and apply. `repo/Caddyfile.example`
+documents the same block for reference. The client defaults to `http://apps.bam/`
+(`data/Settings.kt`).
+
+**Plain HTTP is intentional.** Everything is reached over Tailscale, which already
+encrypts and authenticates the connection, so TLS would just re-wrap an encrypted
+tunnel. `apps.bam` is a MagicDNS name resolving to this box (`100.64.0.2`) — the
+same `*.bam` pattern as the box's other tailnet sites; no public DNS is involved.
+Both the emulator (via the container's inherited DNS) and the Pixel 8a resolve it.
+
+**Auth is currently off** — access is limited by Tailscale ACLs. The client still
+supports a bearer token: set one in its settings and it sends
+`Authorization: Bearer <token>` on every request (index, APK, and icon). To gate
+the repo, add a matching token check to the `apps.bam` Caddy record.

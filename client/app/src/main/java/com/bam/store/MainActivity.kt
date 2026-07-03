@@ -57,6 +57,7 @@ import com.bam.store.install.InstallEvents
 import com.bam.store.ui.BamStoreTheme
 import kotlinx.coroutines.launch
 
+/** Single-activity host; the whole UI is the Compose [StoreScreen]. */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,6 +65,13 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * The catalog screen and all of its state. Fetches the catalog via [RepoClient],
+ * cross-references each app against [android.content.pm.PackageManager] to derive
+ * Install / Update / Installed state, and orchestrates download + install through
+ * [ApkInstaller]. Terminal install results arrive asynchronously on [InstallEvents]
+ * (collected below) since the OS confirm dialog happens out of process.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StoreScreen() {
