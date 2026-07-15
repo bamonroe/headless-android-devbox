@@ -20,10 +20,22 @@
 # Notes: Android 14 headless, KVM-accelerated. entrypoint boots with -wipe-data,
 # so app state (incl. any configured server URL/key) resets each container start.
 # The emulator has NO real camera / ARCore / RAW — UI, lifecycle, and permission
-# testing only. Camera/ARCore/RAW/SharedCamera work must go to the Pixel 8a.
+# testing only. Camera/ARCore/RAW/SharedCamera work must go to a physical device.
 set -euo pipefail
+
+# Machine-specific paths come from config.yaml via config.sh (the single source
+# of truth) — nothing personal is hardcoded here. config.sh sits at the repo
+# root, two levels up from this script (.claude/skills/android-dev/scripts/).
+SCAFFOLD_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
+if [ -f "$SCAFFOLD_ROOT/config.sh" ]; then
+    # STORAGE_DIR (for docker-compose interpolation) + SCAFFOLD_DIR + any env.
+    # `set -a` auto-exports every assignment the eval creates.
+    set -a; eval "$(cd "$SCAFFOLD_ROOT" && ./config.sh export-env 2>/dev/null || true)"; set +a
+fi
+
 C="${EMU_CONTAINER:-android-emulator}"
-COMPOSE_DIR="${EMU_DIR:-/data/android}"
+COMPOSE_DIR="${EMU_DIR:-${SCAFFOLD_DIR:-$SCAFFOLD_ROOT}}"
+export STORAGE_DIR="${STORAGE_DIR:-/data/storage}"
 eadb() { docker exec "$C" adb "$@"; }
 running() { docker ps --format '{{.Names}}' | grep -qx "$C"; }
 

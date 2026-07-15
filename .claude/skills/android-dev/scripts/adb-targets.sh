@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Enumerate every Android target across the TWO separate adb worlds on this box:
 #
-#   - host adb (/usr/bin/adb)          -> physical phone (Pixel 8a, usually tailnet)
+#   - host adb (/usr/bin/adb)          -> physical devices (phone/tablet, usually wireless)
 #   - container adb (android-emulator) -> the headless Dockerized emulator
 #
 # These are ISOLATED: the host adb server does not see the emulator, and the

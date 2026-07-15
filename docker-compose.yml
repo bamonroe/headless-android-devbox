@@ -20,9 +20,11 @@ services:
       ANDROID_AVD_HOME: /data/avd
       # ACCEL: "off"             # uncomment for software-mode trial without KVM
     volumes:
-      # Everything multi-GB lives on the 15 TB array, never the system disk.
-      - /data/storage/android/sdk:/opt/android-sdk
-      - /data/storage/android/avd:/data/avd
+      # Everything multi-GB lives on the big array, never the system disk.
+      # STORAGE_DIR comes from config.yaml (directories.storage), injected by
+      # emulator.sh; the default keeps a bare `docker compose` working too.
+      - ${STORAGE_DIR:-/data/storage}/android/sdk:/opt/android-sdk
+      - ${STORAGE_DIR:-/data/storage}/android/avd:/data/avd
     mem_limit: 4g                # cap so the emulator can't starve the media stack
     shm_size: 1g
     restart: "no"

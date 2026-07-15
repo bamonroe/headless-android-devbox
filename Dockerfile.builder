@@ -40,8 +40,7 @@ RUN set -eux; \
     rm -f /tmp/cmdtools.zip
 
 # 2) Accept licenses, then bake in platform-tools + the SDK platforms/build-tools the
-#    apps on this box compile against:
-#      trashbot -> compileSdk 34   |   sfit -> compileSdk 35
+#    apps on this box compile against (currently compileSdk 34 and 35).
 #    Add more platforms;android-NN / build-tools;NN.x lines here as new apps appear.
 RUN set -eux; \
     yes | sdkmanager --licenses >/dev/null; \

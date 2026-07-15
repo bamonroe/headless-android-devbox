@@ -22,6 +22,10 @@ avd/
 *.apk
 *.aab
 
+# Machine-specific config + private notes (source of truth stays on-box only)
+config.yaml
+NOTES.local.md
+
 # Editor / OS noise
 *.log
 *.tmp

@@ -17,8 +17,8 @@ container so no project pollutes the host with SDK/toolchain state.
   2. **Per-project Gradle cache** → mounted at a fixed path the container expects
      (e.g. `/gradle-cache`, wired to `GRADLE_USER_HOME`). Lives **alongside the project**
      (e.g. `<project>/.gradle-cache/` or a sibling dir), so each app's dependencies are
-     self-contained and survive the throwaway container. sfit's libs never tangle with
-     trashbot's; a corrupt cache is one folder to delete.
+     self-contained and survive the throwaway container. One app's libs never tangle
+     with another's; a corrupt cache is one folder to delete.
   3. **APK out** → the build drops the APK where the emulator/phone install step picks
      it up (either read straight from the mounted source tree, or an explicit out dir).
 - **This dir owns** the image (`Dockerfile.builder`) and the launch command. App projects
@@ -38,23 +38,23 @@ container so no project pollutes the host with SDK/toolchain state.
    `~/.gradle/gradle.properties`), install Android cmdline-tools + platform-tools +
    `build-tools;34.x` + `platforms;android-34`, accept licenses, set `ANDROID_SDK_ROOT`
    and `GRADLE_USER_HOME=/gradle-cache`. Consider bootstrapping the big SDK bits onto
-   `/data/storage/android/sdk` (reuse the array, same as the emulator) vs baking them into
-   the image — decide based on how much we want in the image layer.
+   the storage array (reuse it, same as the emulator) vs baking them into the image —
+   decide based on how much we want in the image layer.
 2. **Launch wrapper / skill command** — e.g. `emulator.sh build <project-dir> [gradle
    task]`, or a new `build.sh`. It: resolves the project dir, ensures the project's cache
    folder exists, runs `docker run --rm -v <proj>:/workspace -v <cache>:/gradle-cache
    android-builder:local ./gradlew <task>`, then prints the resulting APK path.
 3. **android-dev skill docs** — document the build container next to the emulator, and the
    three-mount contract, so agents in other projects know to "come here to build."
-4. **Per-project CLAUDE.md note** (sfit, trashbot) — a one-liner: "build via
+4. **Per-project CLAUDE.md note** (each app repo) — a one-liner: "build via the
    `/data/android` build container; Gradle cache lives at `<project>/.gradle-cache`."
 
 ## Open decisions
 
 - Compose service vs plain `docker run --rm`. Ephemeral one-shot builds favor plain
   `docker run --rm`; docker-compose fits long-lived services (like the emulator) better.
-- SDK in image layer vs bootstrapped onto `/data/storage/android/sdk` (shared with the
-  emulator's SDK, or a separate build SDK).
+- SDK in image layer vs bootstrapped onto the storage array (shared with the emulator's
+  SDK, or a separate build SDK).
 - Exact cache location convention: `<project>/.gradle-cache/` (in-tree, git-ignored) vs a
   sibling/central `<project>-cache` dir.
 - How the APK crosses from the build container to the emulator/phone install step.

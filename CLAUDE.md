@@ -1,15 +1,34 @@
 # /data/android — headless Android emulator for APK development
 
 Purpose: a throwaway, headless Android 14 emulator driven entirely over `adb` inside a
-Docker container. It's the fast/disposable target for building and tap-testing the APKs
-built on this box (UI, layout, navigation, lifecycle, permission flows) before a finished
-build is published to the **BAM Store** and/or installed on the physical Pixel 8a.
+Docker container, **plus** a disposable container that builds the APKs. It's the
+fast/disposable target for building and tap-testing apps (UI, layout, navigation,
+lifecycle, permission flows) before a finished build is published to the private app
+store and/or installed on a physical device.
 
-This directory is only the emulator scaffold (`Dockerfile`, `entrypoint.sh`,
-`docker-compose.yml`, `README.md`). The **day-to-day workflow lives in the `android-dev`
-skill** (`~/.claude/skills/android-dev`) — its `scripts/emulator.sh` and
+This directory holds the emulator scaffold (`Dockerfile`, `entrypoint.sh`,
+`docker-compose.yml`), the build container (`Dockerfile.builder`, `build.sh`), and the
+machine config (`config.yaml`). The **day-to-day workflow lives in the `android-dev`
+skill** (`.claude/skills/android-dev` here) — its `scripts/emulator.sh` and
 `scripts/adb-targets.sh` wrap everything below. Reach for the skill first; this file is
 the reference for what the skill is driving and how to change it.
+
+## Machine config — `config.yaml` (source of truth)
+
+All machine-specific values (physical-device IPs, storage/app-store paths) live in
+`config.yaml`, which is **git-ignored** so nothing personal is committed or published.
+The tooling and this doc reference it instead of hardcoding — that keeps the repo
+generic and cloneable while staying directly usable here. Set it up once:
+
+```bash
+cp config.example.yaml config.yaml     # then edit in your values
+./config.sh get directories storage    # read a value
+./config.sh get devices <name>         # a physical device IP
+```
+
+`config.sh` is a tiny dependency-free YAML reader (no yq/PyYAML needed). `emulator.sh`
+and `docker-compose.yml` pull the storage path from it automatically. Personal per-app
+notes live in the git-ignored `NOTES.local.md` (not in this committed file).
 
 ## The two isolated adb worlds (read this first)
 
@@ -18,13 +37,13 @@ There are two separate adb worlds on this box and they do **not** see each other
 | Target | adb path | Serial | Reach it with |
 |---|---|---|---|
 | **Emulator** (this dir) | in-container | `emulator-5554` | `docker exec android-emulator adb …` |
-| **Physical Pixel 8a** ("akita") | host `/usr/bin/adb` | `100.64.0.3:5555` (tailnet) | `adb -s <serial> …` |
-| **Physical Tab S6 Lite** ("stab", SM-P620) | host `/usr/bin/adb` | `100.64.0.5:5555` (tailnet) | `adb -s <serial> …` |
+| **Physical devices** (phone, tablet) | host `/usr/bin/adb` | `<ip>:5555` (see `config.yaml`) | `adb -s <ip>:5555 …` |
 
 The host's `/usr/bin/adb` cannot see this emulator; the emulator's in-container adb cannot
-see the phone. `scripts/adb-targets.sh` (in the skill) lists both at once. Use the
-emulator for UI/logic iteration; use the phone for anything touching real hardware
-(camera, ARCore, RAW/DNG, SharedCamera, sensors) — the emulator has none of those.
+see the physical devices. `scripts/adb-targets.sh` (in the skill) lists both live, and the
+friendly-name→IP map is in `config.yaml` (`devices:`). Use the emulator for UI/logic
+iteration; use a physical device for anything touching real hardware (camera, ARCore,
+RAW/DNG, SharedCamera, sensors) — the emulator has none of those.
 
 ## KVM (the one hard prerequisite — now satisfied)
 
@@ -60,9 +79,9 @@ docker exec android-emulator adb shell getprop sys.boot_completed   # "1" = read
 ```
 
 First run downloads cmdline-tools + platform-tools + emulator + the Android 14 x86_64
-system image into `/data/storage/android/sdk`, creates the AVD under
-`/data/storage/android/avd`, then boots. All large files stay on the 15 TB array; the
-Docker image itself is small. Later runs skip straight to boot.
+system image into `<storage>/android/sdk`, creates the AVD under `<storage>/android/avd`,
+then boots (`<storage>` is `directories.storage` from `config.yaml`). All large files stay
+on that big disk; the Docker image itself is small. Later runs skip straight to boot.
 
 ## Building APKs — the disposable build container (preferred)
 
@@ -72,8 +91,8 @@ builds run in a **throwaway container** from a reusable image with the SDK baked
 
 ```bash
 cd /data/android
-./build.sh ~/git/personal/sfit                        # default :app:assembleDebug
-./build.sh ~/git/personal/trashbot/android :app:assembleRelease
+./build.sh <project-dir>                        # default :app:assembleDebug
+./build.sh <project-dir> :app:assembleRelease
 ```
 
 - **Image** (`Dockerfile.builder`, tag `android-builder:local`) — JDK 21 (matches the
@@ -90,13 +109,12 @@ cd /data/android
 ## Build → install → inspect loop
 
 ```bash
-# 1) build a debug APK via the disposable container (above); or on the host directly
-#    (JDK 21 is pinned globally in ~/.gradle/gradle.properties; host SDK at ~/Android/Sdk)
-cd /data/android && ./build.sh ~/git/personal/<proj>
-APK=~/git/personal/<proj>/app/build/outputs/apk/debug/app-debug.apk
+# 1) build a debug APK via the disposable container (above)
+cd /data/android && ./build.sh <project-dir>
+APK=<project-dir>/app/build/outputs/apk/debug/app-debug.apk
 
 # 2) install + launch on the emulator (via the skill's wrapper)
-S=~/.claude/skills/android-dev/scripts/emulator.sh
+S=/data/android/.claude/skills/android-dev/scripts/emulator.sh
 "$S" install "$PWD/$APK"
 "$S" launch <package>
 "$S" screenshot /tmp/after.png
@@ -112,27 +130,31 @@ container start** — a fresh device each time. Remove the `-wipe-data` flag in
 `entrypoint.sh` to persist state (server URLs, keys, logins) across restarts when testing
 gets iterative.
 
-## Publishing a finished APK to the BAM Store
+## Publishing a finished APK to the app store
 
 When a build is *done* (not a throwaway debug iteration), publish it to the private app
-store at **`/data/bam-store`** so it's installable on any of the owner's devices:
+store (path in `config.yaml`, `directories.bam-store`) so it's installable on any of the
+owner's devices:
 
 ```bash
-/data/bam-store/tools/publish path/to/app.apk --changelog "What changed"
+STORE=$(./config.sh get directories bam-store)
+"$STORE"/tools/publish path/to/app.apk --changelog "What changed"
 ```
 
 This copies the APK into `repo/apks/<pkg>-<versionCode>.apk`, extracts metadata via
 `aapt2`, and rebuilds `repo/index.json`. The `android-dev` skill documents when to do this
 as part of the build workflow. Bump `versionCode` in the app's `build.gradle` before
-publishing an update, or the store keeps only the highest existing code. See
-`/data/bam-store/CLAUDE.md` for the repo contract and serving details.
+publishing an update, or the store keeps only the highest existing code. See the store
+repo's own docs for the contract and serving details.
 
 ## Storage layout
 
+`<storage>` = `directories.storage` in `config.yaml` (a big disk, not the system disk).
+
 | Path | What | Where |
 |---|---|---|
-| `/data/storage/android/sdk` | cmdline-tools, platform-tools, emulator, system images | 15 TB array |
-| `/data/storage/android/avd` | AVD config + qcow2 disks | 15 TB array |
+| `<storage>/android/sdk` | cmdline-tools, platform-tools, emulator, system images | big disk |
+| `<storage>/android/avd` | AVD config + qcow2 disks | big disk |
 | Docker image | JDK + emulator libs only (small) | system disk |
 
 ## Knobs (`docker-compose.yml` `environment:`)
@@ -148,22 +170,16 @@ publishing an update, or the store keeps only the highest existing code. See
 
 ```bash
 cd /data/android && docker compose down
-# SDK + AVD persist on /data/storage/android; to reclaim that space:
-# rm -rf /data/storage/android/{sdk,avd}/*
+# SDK + AVD persist under <storage>/android; to reclaim that space:
+# rm -rf <storage>/android/{sdk,avd}/*
 ```
 
 ## Per-app notes
 
-- **sfit** (`~/git/personal/sfit`, pkg `net.bam.sfit`) — talks to the live SparkyFitness
-  server at `http://fit.bam` (host: `http://127.0.0.1:3004/api`) with an API key set in
-  the app's Settings. A fresh (wiped) emulator has none, so set base URL + key first; mint
-  a key in the SparkyFitness admin UI (deployment at `/data/sparkyfitness`). Features
-  UI-tested here: unified food-source search (shared `FoodSourceSearch`) and negative
-  ingredient quantities (`±` toggle per ingredient row).
-- **trashbot capture** (`~/git/personal/trashbot/android`, pkg `com.trashbot.capture`) —
-  iterate the UI/permission shell on the emulator, but the SharedCamera + manual-lock +
-  RAW capture path must be tested on the **Pixel 8a** (no real camera on the emulator).
+Machine- and app-specific working notes (which app talks to which internal server, per-app
+test focus, physical-device requirements) live in the **git-ignored `NOTES.local.md`** so
+they stay on this box but never get published. See that file for the current apps.
 
-See also `README.md` here (user-facing version), the `android-dev` skill, `/data/bam-store`
-(the app store), and the memory notes `android-emulator-setup` /
-`android-emulator-and-phone-adb`.
+See also `README.md` here (user-facing version), the `android-dev` skill, the app-store
+repo (`directories.bam-store` in `config.yaml`), and the memory notes
+`android-emulator-setup` / `android-emulator-and-phone-adb`.

@@ -8,8 +8,8 @@
 #
 # Usage:
 #   ./build.sh <project-dir> [gradle-task ...]
-#   ./build.sh ~/git/personal/sfit                 # default: :app:assembleDebug
-#   ./build.sh ~/git/personal/trashbot/android :app:assembleRelease
+#   ./build.sh /path/to/project                    # default: :app:assembleDebug
+#   ./build.sh /path/to/project :app:assembleRelease
 #
 # The three-mount contract (see Dockerfile.builder):
 #   <project-dir>            -> /workspace     (source in, APK out)
