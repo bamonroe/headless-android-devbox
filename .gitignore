@@ -1,0 +1,28 @@
+# This repo tracks the emulator/build scaffold and our decisions (CLAUDE.md,
+# AGENTS.md, Dockerfiles, scripts, the android-dev skill). It must NOT track any
+# large or machine-specific container state — that all lives elsewhere:
+#   - the SDK/AVD/system images live on /data/storage/android (outside this dir)
+#   - each app's Gradle cache lives in <project>/.gradle-cache (outside this dir)
+# The patterns below are belt-and-suspenders in case any of that ever lands here.
+
+# Per-project Gradle caches / build output, if ever created in-tree
+.gradle-cache/
+.gradle/
+build/
+**/build/outputs/
+
+# Android SDK / AVD / system images, if ever bootstrapped in-tree
+sdk/
+avd/
+*.qcow2
+*.img
+*.zip
+
+# Built artifacts
+*.apk
+*.aab
+
+# Editor / OS noise
+*.log
+*.tmp
+.DS_Store

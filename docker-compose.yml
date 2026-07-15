@@ -1,0 +1,33 @@
+services:
+  android:
+    build: .
+    image: sfit-android-emulator:local
+    container_name: android-emulator
+    # KVM is REQUIRED for usable speed. It only exists after Intel VT-x is enabled
+    # in BIOS (see README). With the device line present, `up` fails fast if /dev/kvm
+    # is missing — which is the correct signal. To force a slow software-mode trial,
+    # comment out the `devices:` block and set environment ACCEL=off.
+    devices:
+      - /dev/kvm:/dev/kvm
+    environment:
+      ANDROID_API: "34"          # Android 14
+      ANDROID_TAG: google_apis
+      ANDROID_ABI: x86_64
+      AVD_NAME: sfit_test
+      AVD_DEVICE: pixel_6
+      EMU_MEMORY: "2048"         # MB given to the guest; box has ~3.6 GB free
+      ANDROID_SDK_ROOT: /opt/android-sdk
+      ANDROID_AVD_HOME: /data/avd
+      # ACCEL: "off"             # uncomment for software-mode trial without KVM
+    volumes:
+      # Everything multi-GB lives on the 15 TB array, never the system disk.
+      - /data/storage/android/sdk:/opt/android-sdk
+      - /data/storage/android/avd:/data/avd
+    mem_limit: 4g                # cap so the emulator can't starve the media stack
+    shm_size: 1g
+    restart: "no"
+    networks: [android-net]
+
+networks:
+  android-net:
+    driver: bridge
