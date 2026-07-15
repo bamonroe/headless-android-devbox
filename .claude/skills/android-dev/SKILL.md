@@ -32,8 +32,16 @@ JDK/SDK/Gradle toolchain is installed on the host:
 ```
 
 - Per-project Gradle cache lives at `<project>/.gradle-cache` (git-ignore it) and
-  persists across builds, so repeats are fast. APK lands in the project's
-  `build/outputs/apk/…`.
+  persists across builds, so repeats are fast. `build.sh` mounts the project's
+  **parent** at `/workspace` and runs Gradle from `/workspace/<project-name>`, so
+  sibling repo inputs such as `../docs/commands.json` are visible inside the
+  container. APKs still land in the project's `build/outputs/apk/…`.
+- The build container sets `HOME=/gradle-cache`, so Android's default debug
+  keystore is stable per project. That keeps future `adb install -r` upgrades from
+  failing with `INSTALL_FAILED_UPDATE_INCOMPATIBLE`. If an already-installed app
+  was signed by an older throwaway key, back up app data with `run-as`, uninstall
+  once, install the new APK, then restore the data; after that, normal `install -r`
+  works.
 - Add a new app's SDK level to `/data/android/Dockerfile.builder` and rebuild the
   image (`docker build -f Dockerfile.builder -t android-builder:local .`) when its
   `compileSdk` isn't already baked in.

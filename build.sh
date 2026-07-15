@@ -11,8 +11,8 @@
 #   ./build.sh /path/to/project                    # default: :app:assembleDebug
 #   ./build.sh /path/to/project :app:assembleRelease
 #
-# The three-mount contract (see Dockerfile.builder):
-#   <project-dir>            -> /workspace     (source in, APK out)
+# The mount contract (see Dockerfile.builder):
+#   <project-parent>         -> /workspace     (source in, APK out)
 #   <project-dir>/.gradle-cache -> /gradle-cache (this project's OWN persistent cache)
 # The SDK is baked into the image, private per container — nothing shared, no collisions.
 set -euo pipefail
@@ -26,6 +26,9 @@ if [ -z "$PROJECT" ]; then
 fi
 shift || true
 PROJECT="$(cd "$PROJECT" && pwd)"   # normalize to absolute
+PROJECT_PARENT="$(cd "$PROJECT/.." && pwd)"
+PROJECT_NAME="$(basename "$PROJECT")"
+WORKDIR="/workspace/$PROJECT_NAME"
 
 if [ ! -x "$PROJECT/gradlew" ]; then
   echo "!! no ./gradlew in $PROJECT — is that the Android project root?" >&2
@@ -43,13 +46,14 @@ mkdir -p "$CACHE"
 
 echo ">> Building $PROJECT  [tasks: $*]"
 echo ">> image=$IMAGE  cache=$CACHE"
+echo ">> mount=$PROJECT_PARENT:/workspace  workdir=$WORKDIR"
 
 docker run --rm \
   --user "$(id -u):$(id -g)" \
-  -e HOME=/tmp \
-  -v "$PROJECT":/workspace \
+  -e HOME=/gradle-cache \
+  -v "$PROJECT_PARENT":/workspace \
   -v "$CACHE":/gradle-cache \
-  -w /workspace \
+  -w "$WORKDIR" \
   "$IMAGE" \
   ./gradlew --no-daemon "$@"
 

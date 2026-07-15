@@ -45,7 +45,11 @@ exporting `STORAGE_DIR` (see `config.sh export-env`).
 ```
 
 One baked `android-builder:local` image (JDK 21 + SDK), a throwaway container per
-build, and a per-project Gradle cache at `<project>/.gradle-cache`. See CLAUDE.md.
+build, and a per-project Gradle cache at `<project>/.gradle-cache`. `build.sh`
+mounts the project's parent directory, not only the Gradle root, so builds that
+read sibling files such as `../docs/commands.json` work without custom Docker
+commands. It also keeps `HOME` inside the Gradle cache, which gives each project a
+stable debug keystore for repeat `adb install -r` upgrades. See CLAUDE.md.
 
 ## Install & test the app on the emulator
 

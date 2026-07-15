@@ -7,17 +7,21 @@
 # It is meant to be run DISPOSABLY, one throwaway container per build:
 #
 #   docker run --rm \
-#     -v <project>:/workspace \
+#     -v <project-parent>:/workspace \
 #     -v <project-gradle-cache>:/gradle-cache \
+#     -w /workspace/<project-dir-name> \
 #     android-builder:local ./gradlew :app:assembleDebug
 #
-# The three-mount contract:
-#   /workspace     <- the app project source (read-write; APK lands in its build/ dir)
+# The mount contract:
+#   /workspace     <- the app project's parent dir. This keeps sibling repo inputs
+#                     such as ../docs visible to Gradle while APKs still land under
+#                     the project build/ dir.
 #   /gradle-cache  <- the project's OWN persistent Gradle cache (GRADLE_USER_HOME)
 # The SDK is NOT a mount — it is baked into the image, private to each container.
 #
 # Each project's Gradle wrapper (gradlew) downloads its own Gradle version into the
-# mounted /gradle-cache, so this image does not pin a Gradle version.
+# mounted /gradle-cache, so this image does not pin a Gradle version. build.sh also
+# sets HOME=/gradle-cache so Android's default debug keystore is stable per project.
 FROM eclipse-temurin:21-jdk-jammy
 
 ENV ANDROID_SDK_ROOT=/opt/android-sdk \

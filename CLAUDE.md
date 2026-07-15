@@ -99,10 +99,19 @@ cd /data/android
   global pin) + Android SDK platforms 34 & 35 + build-tools, all baked in and **private to
   each container**, so parallel builds never collide over a shared SDK. Rebuild it after
   editing the Dockerfile: `docker build -f Dockerfile.builder -t android-builder:local .`
-- **Per build**: `build.sh` spins a `docker run --rm` container and mounts three things —
-  the project source at `/workspace`, the project's **own** Gradle cache at `/gradle-cache`
-  (lives at `<project>/.gradle-cache/`, git-ignored, persists across builds so repeat
-  builds are fast), and the APK drops back into the project's `build/outputs/apk/…`.
+- **Per build**: `build.sh` spins a `docker run --rm` container and mounts the
+  project's **parent** at `/workspace`, then runs Gradle from
+  `/workspace/<project-name>`. That keeps sibling repo inputs such as
+  `../docs/commands.json` visible inside the container while the APK still drops
+  into the project's `build/outputs/apk/…`. The project's **own** Gradle cache
+  lives at `<project>/.gradle-cache/`, is mounted at `/gradle-cache`, and should be
+  git-ignored.
+- `build.sh` sets `HOME=/gradle-cache`, so Android's default debug keystore is
+  stable per project. That prevents repeat debug installs from failing with
+  `INSTALL_FAILED_UPDATE_INCOMPATIBLE` because each disposable container minted a
+  new debug key. If a device already has an APK signed by an older throwaway key,
+  use `run-as` to back up app data, uninstall once, install a fresh build, and
+  restore the data; after that, `adb install -r` should work normally.
 - Add a new app's SDK level to `Dockerfile.builder` (a `platforms;android-NN` +
   `build-tools;NN.x` line) and rebuild the image when its `compileSdk` isn't 34 or 35.
 
