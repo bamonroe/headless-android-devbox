@@ -45,6 +45,12 @@ friendly-name→IP map is in `config.yaml` (`devices:`). Use the emulator for UI
 iteration; use a physical device for anything touching real hardware (camera, ARCore,
 RAW/DNG, SharedCamera, sensors) — the emulator has none of those.
 
+A corollary: the **build container is a third adb-blind world** — Gradle's
+`connectedDebugAndroidTest` runs adb there and reports "No connected devices!". Don't use it;
+run instrumented (`androidTest`) suites with `scripts/connected-test.sh` (in the skill), which
+builds the APKs in the builder then installs and instruments them through the emulator's own
+adb. See the `android-dev` skill for details.
+
 ## KVM (the one hard prerequisite — now satisfied)
 
 An x86 emulator is unusably slow without KVM. `/dev/kvm` exists only when Intel VT-x is

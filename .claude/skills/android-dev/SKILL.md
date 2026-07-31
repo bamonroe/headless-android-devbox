@@ -86,6 +86,23 @@ Knobs (`EMU_MEMORY`, `ANDROID_API`, `-wipe-data`) and storage layout live in
 UI (`emulator.sh ui`) and tap the real bounds:
 `emulator.sh adb shell input tap <x> <y>`.
 
+## Instrumented (`androidTest`) tests — `scripts/connected-test.sh`
+
+Do **not** run Gradle's `connectedDebugAndroidTest`: it starts an adb server inside the
+throwaway build container (a different adb world than the emulator) and dies with
+"No connected devices!". Instead:
+
+```sh
+scripts/connected-test.sh <project-dir>                         # build + run the whole suite
+scripts/connected-test.sh <project-dir> -e class com.foo.BarTest  # args pass to `am instrument`
+```
+
+It builds the app + `androidTest` APKs in the builder container, reads the instrumentation
+component from the test APK's manifest (aapt), then installs and runs it through the
+**emulator container's own adb** — the one adb that can see the emulator. Both halves stay in
+the world where they work. Exit status is the test result (non-zero if any test fails/errors
+or the runner can't start), so it's CI-usable. Booting the emulator first is handled for you.
+
 ## Physical devices (over host adb)
 
 Get the device IP from `config.yaml` (`./config.sh get devices <name>`), or run
