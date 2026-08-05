@@ -176,6 +176,11 @@ Alongside the emulator and the builder there is now an **fdroidserver toolbox**:
 JDK + SDK (`aapt2`, `apksigner`, `zipalign`) are reused rather than duplicated. It
 owns index generation and signing for the F-Droid-style APK repo.
 
+- The repo dir itself (`directories.fdroid-repo`) is **entirely off git** — config,
+  APKs, metadata and the signed index are all regenerable. `scripts/fdroid-config.sh`
+  regenerates its `config.yml` from `config.yaml`, and `scripts/fdroid-sync-apks.sh`
+  copies the store's binaries into `repo/` (skipping androidTest APKs). Layout table:
+  `README.md` → "The repo layout, and what's committed".
 - Drive it with **`scripts/fdroid.sh`** (`init`, `update -c`, `deploy`, `shell`) —
   never with a hand-typed `docker run`. It mounts `directories.fdroid-repo` at
   `/repo` and `directories.fdroid-keystore` read-only at `/keystore`, and runs as the

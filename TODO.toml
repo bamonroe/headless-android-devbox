@@ -33,18 +33,6 @@ created = 2026-08-05
 tags = ["merge", "bam-store", "fdroid", "epic"]
 
 [[task]]
-id = "lay-out-and-initialize-the-f-droid-repo-directory"
-title = "Lay out and initialize the F-Droid repo directory"
-description = "Decide the on-disk layout for the F-Droid repo under store/ (e.g. store/fdroid/{repo,metadata,unsigned}) versus the existing store/repo with index.json, run 'fdroid init' through the container, and populate repo/ from the existing store/repo/apks APKs. Decide what is committed vs git-ignored (APKs and generated index files are build artifacts). Result: a working repo whose index-v1.json/index-v2.json validate and are signed."
-status = "active"
-level = "task"
-category = "feature"
-urgency = "normal"
-order = 80
-created = 2026-08-05
-tags = []
-
-[[task]]
 id = "generate-per-package-f-droid-metadata-from-the-existing-store-data"
 title = "Generate per-package F-Droid metadata from the existing store data"
 description = "Write the metadata/<package>.yml files F-Droid needs (Name, Summary, Description, License, Categories, AuthorName) for the packages already in store/repo/index.json, and port the existing changelog sidecars (apks/<pkg>-<code>.json) into F-Droid's per-version changelog layout (metadata/<pkg>/en-US/changelogs/<versionCode>.txt). Include icon and screenshot handling: storelib currently extracts icons via aapt2 and several apps have icon=null, so decide whether icons come from the APK or from metadata/<pkg>/en-US/icon.png."

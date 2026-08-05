@@ -36,7 +36,9 @@ RUN python3 -m venv /opt/fdroid-venv \
     && /opt/fdroid-venv/bin/pip install --no-cache-dir --upgrade pip \
     && /opt/fdroid-venv/bin/pip install --no-cache-dir fdroidserver
 
-ENV PATH=/opt/fdroid-venv/bin:/opt/android-sdk/cmdline-tools/latest/bin:/opt/android-sdk/platform-tools:/opt/android-sdk/build-tools/35.0.0:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+# NB: /opt/java/openjdk/bin must stay on PATH — apksigner and `jar` are shell
+# wrappers that exec plain `java`, and index signing fails without it.
+ENV PATH=/opt/fdroid-venv/bin:/opt/java/openjdk/bin:/opt/android-sdk/cmdline-tools/latest/bin:/opt/android-sdk/platform-tools:/opt/android-sdk/build-tools/35.0.0:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
     ANDROID_HOME=/opt/android-sdk
 
 # The repo dir is the working dir: every fdroid subcommand operates on ".".
