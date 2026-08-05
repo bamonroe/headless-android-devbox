@@ -169,6 +169,25 @@ container start** — a fresh device each time. Remove the `-wipe-data` flag in
 `entrypoint.sh` to persist state (server URLs, keys, logins) across restarts when testing
 gets iterative.
 
+## The F-Droid repo container (third container here)
+
+Alongside the emulator and the builder there is now an **fdroidserver toolbox**:
+`Dockerfile.fdroid` (tag `fdroid:local`), built `FROM android-builder:local` so the
+JDK + SDK (`aapt2`, `apksigner`, `zipalign`) are reused rather than duplicated. It
+owns index generation and signing for the F-Droid-style APK repo.
+
+- Drive it with **`scripts/fdroid.sh`** (`init`, `update -c`, `deploy`, `shell`) —
+  never with a hand-typed `docker run`. It mounts `directories.fdroid-repo` at
+  `/repo` and `directories.fdroid-keystore` read-only at `/keystore`, and runs as the
+  invoking uid so nothing comes back root-owned.
+- Repo identity (`url`, `name`, `description`, `keystore-alias`) lives in the
+  `fdroid:` section of `config.yaml`. The keystore is **never** in git.
+- It is also a compose service behind the `tools` profile, so a bare
+  `docker compose up` never starts it.
+- Rebuild after editing the Dockerfile:
+  `docker build -f Dockerfile.fdroid -t fdroid:local .`
+- User-facing commands + env knobs: `README.md` → "F-Droid repo toolbox".
+
 ## Publishing to the app store
 
 Publishing is automatic for APKs produced by `/data/android/build.sh`: after Gradle
@@ -198,6 +217,8 @@ and serving details.
 | `<storage>/android/sdk` | cmdline-tools, platform-tools, emulator, system images | big disk |
 | `<storage>/android/avd` | AVD config + qcow2 disks | big disk |
 | `directories.bam-store-apks` | the store's APK binaries (hundreds of MB) | big disk |
+| `directories.fdroid-repo` | fdroidserver repo dir (`repo/`, `metadata/`, signed index) | big disk |
+| `directories.fdroid-keystore` | the F-Droid repo **signing key** — never in git, back it up | big disk |
 | `store/repo/` | `index.json`, icons, changelog sidecars — the small, committed parts | this repo |
 | Docker image | JDK + emulator libs only (small) | system disk |
 

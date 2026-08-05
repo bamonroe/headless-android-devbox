@@ -8,7 +8,7 @@
 # reusable by anyone who clones it. The scripts and the docs treat `config.yaml`
 # as the single source of truth; nothing personal is hardcoded elsewhere.
 #
-# Schema: three flat sections of `name: value` pairs. Read it with `config.sh`
+# Schema: flat sections of `name: value` pairs. Read it with `config.sh`
 # (`./config.sh get <section> <name>`). Keep the 2-space indentation.
 # -----------------------------------------------------------------------------
 
@@ -27,6 +27,16 @@ directories:
   scaffold: /srv/android      # this repo's checkout (the docker-compose dir)
   # bam-store: /srv/android/store  # OPTIONAL override; defaults to `store/` in this repo
   bam-store-apks: /srv/storage/app-store/apks  # its APK payload — big disk, never in git
+  fdroid-repo: /srv/storage/fdroid          # fdroidserver repo dir (repo/, metadata/, index) — big disk
+  fdroid-keystore: /srv/storage/fdroid-keys/keystore.p12  # repo SIGNING key — off git, back it up
+
+# F-Droid repo settings. Used by the fdroid container/scripts to generate and
+# sign the repo index; paths for them live in `directories` above.
+fdroid:
+  url: https://fdroid.example.com/repo   # public URL clients add as a repo
+  name: My F-Droid Repo                  # repo display name
+  description: Private APK repo          # repo description shown in clients
+  keystore-alias: fdroidrepo             # key alias inside the keystore
 
 # Generic passthrough environment variables for the tooling. Optional — leave
 # empty, or add KEY: value pairs that scripts/containers should see.
