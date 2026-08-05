@@ -138,7 +138,8 @@ cd /data/android
   use `run-as` to back up app data, uninstall once, install a fresh build, and
   restore the data; after that, `adb install -r` should work normally.
 - After a successful APK-producing build, `build.sh` publishes each new APK into
-  the BAM Store at `directories.bam-store` in `config.yaml`. Set
+  the in-repo BAM Store at `store/` (override with `directories.bam-store` in
+  `config.yaml`). Set
   `BAM_STORE_PUBLISH=0` for scratch builds that should not update the store, and
   set `BAM_STORE_CHANGELOG="..."` to control the changelog sidecar written by
   the store's `tools/publish`.
@@ -173,14 +174,13 @@ gets iterative.
 
 Publishing is automatic for APKs produced by `/data/android/build.sh`: after Gradle
 finishes successfully, the script finds APKs written under `build/outputs/apk/` during
-that build and runs the BAM Store publisher for each one. The store path comes from
-`config.yaml`, `directories.bam-store`.
+that build and runs the BAM Store publisher for each one. The store is `store/` in
+this repo; `directories.bam-store` in `config.yaml` is an optional override.
 
 Manual publishing is still available for APKs built outside this pipeline:
 
 ```bash
-STORE=$(./config.sh get directories bam-store)
-"$STORE"/tools/publish path/to/app.apk --changelog "What changed"
+./store/tools/publish path/to/app.apk --changelog "What changed"
 ```
 
 This copies the APK into `repo/apks/<pkg>-<versionCode>.apk`, extracts metadata via
@@ -224,8 +224,8 @@ Machine- and app-specific working notes (which app talks to which internal serve
 test focus, physical-device requirements) live in the **git-ignored `NOTES.local.md`** so
 they stay on this box but never get published. See that file for the current apps.
 
-See also `README.md` here (user-facing version), the `android-dev` skill, the app-store
-repo (`directories.bam-store` in `config.yaml`), and the memory notes
+See also `README.md` here (user-facing version), the `android-dev` skill, the in-repo
+app store (`store/`), and the memory notes
 `android-emulator-setup` / `android-emulator-and-phone-adb`.
 
 ---

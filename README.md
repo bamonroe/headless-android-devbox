@@ -52,7 +52,8 @@ commands. It also keeps `HOME` inside the Gradle cache, which gives each project
 stable debug keystore for repeat `adb install -r` upgrades.
 
 After a successful APK-producing build, `build.sh` publishes the new APK(s) into
-the BAM Store from `config.yaml` `directories.bam-store`, making them available
+the in-repo BAM Store at `store/` (override with `config.yaml`
+`directories.bam-store`), making them available
 through the private app repo. Set `BAM_STORE_PUBLISH=0` for a local build only, or
 set `BAM_STORE_CHANGELOG="..."` to control the store changelog. See CLAUDE.md.
 

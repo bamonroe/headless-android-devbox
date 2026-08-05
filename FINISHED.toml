@@ -17,6 +17,17 @@ finish_work = "Tasks arrive here via `scripts/todo.sh done <id>`; newest first, 
 growth = "This file only grows; nothing is removed from it."
 
 [[task]]
+id = "point-build-sh-at-the-in-repo-store-publisher"
+title = "Point build.sh at the in-repo store publisher"
+description = "build.sh resolves the publisher via directories.bam-store in config.yaml, which now just points back at /data/android/store. Default the publisher path to $SCRIPT_DIR/store/tools/publish and treat the config key as an optional override (or drop it), so a fresh clone publishes with no config.yaml edit."
+status = "finished"
+level = "task"
+category = "refactor"
+created = 2026-08-05
+completed = 2026-08-05
+tags = []
+
+[[task]]
 id = "scope-the-merged-documentation-and-skill-updates"
 title = "Scope the merged documentation and skill updates"
 description = "The two repos each have CLAUDE.md and README.md with their own doc maps. Scope folding the store docs into this repo's hub-and-spoke map without duplication: what the merged CLAUDE.md owns, what README.md owns, whether the store gets its own spoke doc, and updating the android-dev skill (publishing section, adb worlds, new fdroid container commands). Also fold the store's repository-contract section into whichever doc owns it."

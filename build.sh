@@ -11,8 +11,9 @@
 #   ./build.sh /path/to/project                    # default: :app:assembleDebug
 #   ./build.sh /path/to/project :app:assembleRelease
 #
-# Successful APK-producing builds are published into the BAM Store configured at
-# `directories.bam-store` in config.yaml. Set BAM_STORE_PUBLISH=0 to build only.
+# Successful APK-producing builds are published into the in-repo BAM Store at
+# `store/` (override with `directories.bam-store` in config.yaml). Set
+# BAM_STORE_PUBLISH=0 to build only.
 #
 # The mount contract (see Dockerfile.builder):
 #   <project-parent>         -> /workspace     (source in, APK out)
@@ -96,9 +97,12 @@ if [ "$BAM_STORE_PUBLISH" = "0" ]; then
   exit 0
 fi
 
+# The store lives in this repo at store/; directories.bam-store is only an
+# optional override for an out-of-tree checkout.
 STORE="$("$SCRIPT_DIR/config.sh" get directories bam-store || true)"
-if [ -z "$STORE" ] || [ ! -x "$STORE/tools/publish" ]; then
-  echo "!! BAM Store publish requested, but directories.bam-store is missing or invalid: ${STORE:-<empty>}" >&2
+STORE="${STORE:-$SCRIPT_DIR/store}"
+if [ ! -x "$STORE/tools/publish" ]; then
+  echo "!! BAM Store publish requested, but no publisher at $STORE/tools/publish" >&2
   exit 1
 fi
 
