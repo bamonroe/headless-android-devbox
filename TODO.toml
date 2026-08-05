@@ -55,18 +55,6 @@ created = 2026-08-05
 tags = ["merge", "bam-store", "fdroid", "epic"]
 
 [[task]]
-id = "decide-the-merged-repo-layout-and-history-preservation-plan"
-title = "Decide the merged repo layout and history-preservation plan"
-description = "Design where /data/bam-store lands inside /data/android: proposed store/ (repo/, tools/, client/) vs top-level. Decide whether to preserve bam-store git history (git subtree/merge with --allow-unrelated-histories) or import as a squashed snapshot. Cover .gitignore reconciliation (repo/apks/*.apk, repo/icons/*, repo/index.json, client build dirs, __pycache__), the 327M untracked repo/apks payload which must stay out of git and probably stay on the big disk, and how the old /data/bam-store checkout is retired. Output concrete tasks."
-status = "active"
-level = "scope"
-category = "chore"
-urgency = "high"
-order = 50
-created = 2026-08-05
-tags = ["merge", "layout"]
-
-[[task]]
 id = "scope-the-f-droid-style-repo-container"
 title = "Scope the F-Droid-style repo container"
 description = "Investigate turning the static index.json store into an F-Droid-style repo: containerize fdroidserver (fdroid update//fdroid deploy), signed repo/index-v1.json + index-v2.json, a repo signing keystore kept out of git, metadata/ per-package yml, and icon/screenshot handling. Decide whether F-Droid format replaces the custom index.json or is generated alongside it during a transition, and what that means for the existing BAM Store client (com.bam.store) vs just using the F-Droid client. Follow this repo's Docker-first convention: a Dockerfile + docker-compose service next to the emulator."
@@ -113,3 +101,63 @@ urgency = "normal"
 order = 90
 created = 2026-08-05
 tags = ["docs", "skill"]
+
+[[task]]
+id = "commit-the-in-flight-bam-store-working-changes-before-the-merge"
+title = "Commit the in-flight BAM Store working changes before the merge"
+description = "In /data/bam-store there are uncommitted edits (.gitignore, client/app/build.gradle.kts, client MainActivity.kt) plus untracked repo/apks/*.json sidecars. Commit the source edits atomically so the history-preserving import brings a clean tree; leave the apk/json payload untracked. Also add repo/apks/*.json to the store .gitignore so the changelog sidecars are never committed."
+status = "active"
+level = "task"
+category = "chore"
+urgency = "high"
+order = 51
+created = 2026-08-05
+tags = []
+
+[[task]]
+id = "import-bam-store-into-data-android-store-preserving-history"
+title = "Import BAM Store into /data/android/store/ preserving history"
+description = "Decision: the store lands at top-level store/ inside this repo (store/repo, store/tools, store/client), and git history IS preserved -- the store has only 4 commits, so 'git subtree add --prefix=store <local remote> master' (or fetch + read-tree with --allow-unrelated-histories) is cheap and keeps provenance. Do the import in its own commit, then drop the temporary remote."
+status = "active"
+level = "task"
+category = "feature"
+urgency = "high"
+order = 52
+created = 2026-08-05
+tags = []
+
+[[task]]
+id = "reconcile-gitignore-for-the-merged-store-subtree"
+title = "Reconcile .gitignore for the merged store subtree"
+description = "Fold the store's ignore rules into /data/android/.gitignore under a store/ prefix: store/repo/apks/*.apk, store/repo/apks/*.json, store/repo/icons/*, store/repo/index.json, store/client build dirs (.gradle/, .gradle-cache/, build/, app/build/, local.properties, .kotlin/). This repo already ignores *.apk and __pycache__/ globally, so don't duplicate those. Verify with 'git status --short' that the 327M payload stays untracked after the import."
+status = "active"
+level = "task"
+category = "chore"
+urgency = "high"
+order = 53
+created = 2026-08-05
+tags = []
+
+[[task]]
+id = "keep-the-327m-apk-payload-on-the-big-disk-out-of-the-repo"
+title = "Keep the 327M APK payload on the big disk, out of the repo"
+description = "store/repo/apks is 327M of built APKs and must never enter git nor sit on the system disk. Decide and implement placement: keep the payload under directories.storage from config.yaml and symlink store/repo/apks to it, or make the apks dir configurable in tools/publish and the Caddy serving root. Update config.example.yaml and the serving config accordingly."
+status = "active"
+level = "task"
+category = "feature"
+urgency = "high"
+order = 54
+created = 2026-08-05
+tags = []
+
+[[task]]
+id = "retire-the-old-data-bam-store-checkout"
+title = "Retire the old /data/bam-store checkout"
+description = "Once store/ is imported and verified building, publishing and serving from /data/android, retire /data/bam-store: confirm nothing still references the old path (config.yaml directories.bam-store, build.sh, skills, Caddy units), repoint them at the merged location, then rename the old checkout to /data/bam-store.retired rather than deleting. Delete only after one clean publish cycle from the new home."
+status = "active"
+level = "task"
+category = "chore"
+urgency = "normal"
+order = 55
+created = 2026-08-05
+tags = []

@@ -15,3 +15,14 @@ order = "newest first"
 [meta.rules]
 finish_work = "Tasks arrive here via `scripts/todo.sh done <id>`; newest first, append-only."
 growth = "This file only grows; nothing is removed from it."
+
+[[task]]
+id = "decide-the-merged-repo-layout-and-history-preservation-plan"
+title = "Decide the merged repo layout and history-preservation plan"
+description = "Design where /data/bam-store lands inside /data/android: proposed store/ (repo/, tools/, client/) vs top-level. Decide whether to preserve bam-store git history (git subtree/merge with --allow-unrelated-histories) or import as a squashed snapshot. Cover .gitignore reconciliation (repo/apks/*.apk, repo/icons/*, repo/index.json, client build dirs, __pycache__), the 327M untracked repo/apks payload which must stay out of git and probably stay on the big disk, and how the old /data/bam-store checkout is retired. Output concrete tasks."
+status = "finished"
+level = "scope"
+category = "chore"
+created = 2026-08-05
+completed = 2026-08-05
+tags = ["merge", "layout"]
