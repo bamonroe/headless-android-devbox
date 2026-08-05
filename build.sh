@@ -11,13 +11,23 @@
 #   ./build.sh /path/to/project                    # default: :app:assembleDebug
 #   ./build.sh /path/to/project :app:assembleRelease
 #
+# Successful APK-producing builds are published into the BAM Store configured at
+# `directories.bam-store` in config.yaml. Set BAM_STORE_PUBLISH=0 to build only.
+#
 # The mount contract (see Dockerfile.builder):
 #   <project-parent>         -> /workspace     (source in, APK out)
 #   <project-dir>/.gradle-cache -> /gradle-cache (this project's OWN persistent cache)
 # The SDK is baked into the image, private per container — nothing shared, no collisions.
+if [ -z "${BASH_VERSION:-}" ]; then
+  exec bash "$0" "$@"
+fi
+
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 IMAGE="${BUILDER_IMAGE:-android-builder:local}"
+BAM_STORE_PUBLISH="${BAM_STORE_PUBLISH:-1}"
+BAM_STORE_CHANGELOG="${BAM_STORE_CHANGELOG:-Built by /data/android/build.sh}"
 
 PROJECT="${1:-}"
 if [ -z "$PROJECT" ]; then
@@ -43,6 +53,9 @@ fi
 # Per-project Gradle cache lives alongside the project (git-ignore it there).
 CACHE="$PROJECT/.gradle-cache"
 mkdir -p "$CACHE"
+STAMP="$(mktemp)"
+trap 'rm -f "$STAMP"' EXIT
+touch "$STAMP"
 
 echo ">> Building $PROJECT  [tasks: $*]"
 echo ">> image=$IMAGE  cache=$CACHE"
@@ -57,5 +70,39 @@ docker run --rm \
   "$IMAGE" \
   ./gradlew --no-daemon "$@"
 
+# APKs this build actually (re)wrote — the normal case.
+mapfile -t APKS < <(
+  find "$PROJECT" -path '*/build/outputs/apk/*.apk' -newer "$STAMP" -type f -printf '%p\n' 2>/dev/null | sort
+)
+# Up-to-date build: Gradle rewrote nothing, so nothing is newer than the stamp. Fall back to
+# the APKs already on disk so the BAM Store still gets (re)published without a clean rebuild.
+# Publishing is idempotent — the store keys each release by the APK's versionCode and
+# overwrites that slot, so republishing an unchanged build just re-writes the same entry.
+if [ "${#APKS[@]}" -eq 0 ]; then
+  mapfile -t APKS < <(
+    find "$PROJECT" -path '*/build/outputs/apk/*.apk' -type f -printf '%p\n' 2>/dev/null | sort
+  )
+fi
+
 echo ">> Done. APK(s):"
-find "$PROJECT" -path '*/build/outputs/apk/*.apk' -newer "$CACHE" -printf '   %p\n' 2>/dev/null || true
+if [ "${#APKS[@]}" -eq 0 ]; then
+  echo "   (none found from this build)"
+  exit 0
+fi
+printf '   %s\n' "${APKS[@]}"
+
+if [ "$BAM_STORE_PUBLISH" = "0" ]; then
+  echo ">> BAM Store publish skipped (BAM_STORE_PUBLISH=0)."
+  exit 0
+fi
+
+STORE="$("$SCRIPT_DIR/config.sh" get directories bam-store || true)"
+if [ -z "$STORE" ] || [ ! -x "$STORE/tools/publish" ]; then
+  echo "!! BAM Store publish requested, but directories.bam-store is missing or invalid: ${STORE:-<empty>}" >&2
+  exit 1
+fi
+
+echo ">> Publishing APK(s) to BAM Store: $STORE"
+for apk in "${APKS[@]}"; do
+  "$STORE/tools/publish" "$apk" --changelog "$BAM_STORE_CHANGELOG"
+done

@@ -49,7 +49,12 @@ build, and a per-project Gradle cache at `<project>/.gradle-cache`. `build.sh`
 mounts the project's parent directory, not only the Gradle root, so builds that
 read sibling files such as `../docs/commands.json` work without custom Docker
 commands. It also keeps `HOME` inside the Gradle cache, which gives each project a
-stable debug keystore for repeat `adb install -r` upgrades. See CLAUDE.md.
+stable debug keystore for repeat `adb install -r` upgrades.
+
+After a successful APK-producing build, `build.sh` publishes the new APK(s) into
+the BAM Store from `config.yaml` `directories.bam-store`, making them available
+through the private app repo. Set `BAM_STORE_PUBLISH=0` for a local build only, or
+set `BAM_STORE_CHANGELOG="..."` to control the store changelog. See CLAUDE.md.
 
 ## Install & test the app on the emulator
 
