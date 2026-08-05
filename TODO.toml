@@ -45,18 +45,6 @@ created = 2026-08-05
 tags = []
 
 [[task]]
-id = "add-the-store-spoke-to-the-claude-md-documentation-map"
-title = "Add the store spoke to the CLAUDE.md documentation map"
-description = "The hub-and-spoke table in CLAUDE.md has no row for the store. Add store/CLAUDE.md as the authoritative spoke for the APK repository (contract, committed-vs-generated, client, serving), and trim root CLAUDE.md's 'Publishing to the app store' section down to a pointer plus the build.sh integration facts it genuinely owns."
-status = "active"
-level = "task"
-category = "docs"
-urgency = "normal"
-order = 140
-created = 2026-08-05
-tags = []
-
-[[task]]
 id = "rewrite-store-claude-md-as-an-in-repo-spoke"
 title = "Rewrite store/CLAUDE.md as an in-repo spoke"
 description = "store/CLAUDE.md still reads as a standalone repo root: its own 'What this is', toolchain and device-install sections duplicate the root CLAUDE.md and the android-dev skill. Keep the repository contract, committed-vs-generated, and serving sections it uniquely owns; replace the duplicated toolchain/install/build prose with links to the owning docs."

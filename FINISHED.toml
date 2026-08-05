@@ -17,6 +17,17 @@ finish_work = "Tasks arrive here via `scripts/todo.sh done <id>`; newest first, 
 growth = "This file only grows; nothing is removed from it."
 
 [[task]]
+id = "add-the-store-spoke-to-the-claude-md-documentation-map"
+title = "Add the store spoke to the CLAUDE.md documentation map"
+description = "The hub-and-spoke table in CLAUDE.md has no row for the store. Add store/CLAUDE.md as the authoritative spoke for the APK repository (contract, committed-vs-generated, client, serving), and trim root CLAUDE.md's 'Publishing to the app store' section down to a pointer plus the build.sh integration facts it genuinely owns."
+status = "finished"
+level = "task"
+category = "docs"
+created = 2026-08-05
+completed = 2026-08-05
+tags = []
+
+[[task]]
 id = "serve-the-f-droid-repo-over-https-via-caddy"
 title = "Serve the F-Droid repo over HTTP via Caddy"
 description = "Expose the generated F-Droid repo (repo/ with index-v1.json, index-v2.json, and the APKs) at a stable URL so the F-Droid client can add it as a repository. Serve it over plain HTTP at http://apps.bam/ — the network is an internal Tailscale one, so no TLS and no public cert are needed; the F-Droid index is signed independently of the transport. Use the /data/caddyedit API to edit the Caddyfile without root and bind-mount the new root into the caddy container (see the editing-the-caddyfile-without-root memory). Update store/repo/Caddyfile.example and README.md with the resulting config, and verify by adding the repo in an F-Droid client."

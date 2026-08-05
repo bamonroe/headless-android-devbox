@@ -26,6 +26,7 @@ instead. Read this table first, then follow only the spoke your task needs.
 | **How to work here** (conventions, decisions)     | `CLAUDE.md` (this file) |
 | **How a user runs this** (setup, bring-up, build) | `README.md` |
 | **Day-to-day emulator/device/build workflow**     | the `android-dev` skill (`.claude/skills/android-dev`) |
+| **The BAM Store** (index contract, client, serving) | `store/CLAUDE.md` |
 | **Machine-specific values** (IPs, storage paths)  | `config.yaml` (git-ignored) |
 | **Per-app working notes**                         | `NOTES.local.md` (git-ignored) |
 
@@ -210,21 +211,15 @@ finishes successfully, the script finds APKs written under `build/outputs/apk/` 
 that build and runs the BAM Store publisher for each one. The store is `store/` in
 this repo; `directories.bam-store` in `config.yaml` is an optional override.
 
-Manual publishing is still available for APKs built outside this pipeline:
+What `build.sh` owns here: it publishes only APKs written during *that* build, one
+publisher run per APK, and then re-syncs the F-Droid index via
+`scripts/fdroid-publish.sh` — a failure there warns but doesn't fail the build
+(`FDROID_PUBLISH=0` opts out). Env knobs: `README.md` → "Environment knobs (build +
+publish)".
 
-```bash
-./store/tools/publish path/to/app.apk --changelog "What changed"
-```
-
-This copies the APK into `repo/apks/<pkg>-<versionCode>.apk`, extracts metadata via
-`aapt2` (run inside the `android-builder:local` container, so no host SDK is
-needed), writes an optional changelog sidecar, and rebuilds **both** indexes —
-`repo/index.json` and, via `scripts/fdroid-publish.sh`, the signed F-Droid index
-(advisory: a failure there warns but doesn't fail the publish). `tools/reindex` does
-the same. Bump
-`versionCode` in the app's `build.gradle` before publishing an update, or the store
-keeps only the highest existing code. See the store repo's own docs for the contract
-and serving details.
+Everything else about the store — the `repo/index.json` contract, what's committed
+versus generated, the `com.bam.store` client, manual `tools/publish` / `tools/reindex`
+use, and serving — lives in **`store/CLAUDE.md`**. Go there rather than restating it.
 
 ## Storage layout
 
