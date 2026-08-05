@@ -33,30 +33,6 @@ created = 2026-08-05
 tags = ["merge", "bam-store", "fdroid", "epic"]
 
 [[task]]
-id = "generate-per-package-f-droid-metadata-from-the-existing-store-data"
-title = "Generate per-package F-Droid metadata from the existing store data"
-description = "Write the metadata/<package>.yml files F-Droid needs (Name, Summary, Description, License, Categories, AuthorName) for the packages already in store/repo/index.json, and port the existing changelog sidecars (apks/<pkg>-<code>.json) into F-Droid's per-version changelog layout (metadata/<pkg>/en-US/changelogs/<versionCode>.txt). Include icon and screenshot handling: storelib currently extracts icons via aapt2 and several apps have icon=null, so decide whether icons come from the APK or from metadata/<pkg>/en-US/icon.png."
-status = "active"
-level = "task"
-category = "feature"
-urgency = "normal"
-order = 90
-created = 2026-08-05
-tags = []
-
-[[task]]
-id = "run-f-droid-index-generation-alongside-the-existing-publisher"
-title = "Run F-Droid index generation alongside the existing publisher"
-description = "Extend the publish pipeline so a published APK lands in both the custom index.json store and the F-Droid repo during the transition: after tools/publish succeeds, copy the APK into the fdroid repo dir and run 'fdroid update' in the container. Keep BAM_STORE_PUBLISH=0 honoured and add a matching opt-out for the fdroid step. Both indexes stay in sync until the custom index.json is retired."
-status = "active"
-level = "task"
-category = "feature"
-urgency = "normal"
-order = 100
-created = 2026-08-05
-tags = []
-
-[[task]]
 id = "serve-the-f-droid-repo-over-https-via-caddy"
 title = "Serve the F-Droid repo over HTTPS via Caddy"
 description = "Expose the generated F-Droid repo (repo/ with index-v1.json, index-v2.json, and the APKs) at a stable URL so the F-Droid client can add it as a repository. Use the /data/caddyedit API to edit the Caddyfile without root and bind-mount the new root into the caddy container (see the editing-the-caddyfile-without-root memory). Update store/repo/Caddyfile.example and README.md with the resulting config, and verify by adding the repo in an F-Droid client."
