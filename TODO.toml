@@ -81,13 +81,13 @@ created = 2026-08-05
 tags = ["docs", "skill"]
 
 [[task]]
-id = "retire-the-old-data-bam-store-checkout"
-title = "Retire the old /data/bam-store checkout"
-description = "Retire /data/bam-store. Done: the 327M APK payload lives at /data/android/store/repo (hardlinked back into the old repo dir so serving keeps working), config.yaml/build.sh/skills point at the merged store, and no live config outside Caddy references the old path. The remaining root-only steps are scripted in scripts/retire-bam-store.sh: it backs up /etc/caddy/Caddyfile, repoints the apps.bam root from /data/bam-store/repo to /data/android/store/repo, validates + reloads caddy, checks index.json and an .apk return 200, then renames the checkout to /data/bam-store.retired. BLOCKED on someone running 'sudo /data/android/scripts/retire-bam-store.sh' (no passwordless sudo here). Delete the .retired dir after one clean publish cycle from the new home."
-status = "blocked"
+id = "delete-data-bam-store-retired-after-a-clean-publish-cycle"
+title = "Delete /data/bam-store.retired after a clean publish cycle"
+description = "The old checkout is renamed to /data/bam-store.retired and nothing references it (Caddy now serves /data/android/store/repo, bind-mounted into the caddy container). Run one publish through ./build.sh <project> from the merged home, confirm the new APK appears at http://apps.bam/index.json and downloads, then 'rm -rf /data/bam-store.retired' to reclaim ~327M of hardlinked payload."
+status = "active"
 level = "task"
 category = "chore"
 urgency = "normal"
-order = 55
+order = 100
 created = 2026-08-05
 tags = []

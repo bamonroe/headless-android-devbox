@@ -62,10 +62,11 @@ The store itself now lives in this repo under `store/`. Its APK payload does not
 off the system disk and out of git while `store/repo/` keeps the small, committed
 parts. Serving maps `/apks/` at the payload dir — see `store/repo/Caddyfile.example`.
 
-The pre-merge checkout at `/data/bam-store` is on its way out. Everything that can
-be done without root is done; finish it with `sudo ./scripts/retire-bam-store.sh`,
-which repoints Caddy's `apps.bam` root at `store/repo`, reloads and verifies it,
-then renames the old checkout to `/data/bam-store.retired`.
+The pre-merge checkout at `/data/bam-store` is retired (renamed
+`/data/bam-store.retired`); `http://apps.bam/` now serves straight out of
+`store/repo`. Caddy runs as the `/data/caddy-docker` container, so its
+`apps.bam` root is bind-mounted there, and the Caddyfile itself is edited
+through the `/data/caddyedit` API rather than by hand.
 
 ## Install & test the app on the emulator
 
