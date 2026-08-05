@@ -31,6 +31,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 IMAGE="${BUILDER_IMAGE:-android-builder:local}"
 BAM_STORE_PUBLISH="${BAM_STORE_PUBLISH:-1}"
 BAM_STORE_CHANGELOG="${BAM_STORE_CHANGELOG:-Built by /data/android/build.sh}"
+FDROID_PUBLISH="${FDROID_PUBLISH:-1}"
 
 PROJECT="${1:-}"
 if [ -z "$PROJECT" ]; then
@@ -117,3 +118,15 @@ echo ">> Publishing APK(s) to BAM Store: $STORE (payload: ${BAM_STORE_APKS:-in-r
 for apk in "${APKS[@]}"; do
   "$STORE/tools/publish" "$apk" --changelog "$BAM_STORE_CHANGELOG"
 done
+
+# Second index: mirror the freshly published APKs into the F-Droid repo so both
+# the custom index.json and the signed F-Droid index stay in sync during the
+# transition. Non-fatal — a build must not fail because the repo isn't set up.
+if [ "$FDROID_PUBLISH" = "0" ]; then
+  echo ">> F-Droid publish skipped (FDROID_PUBLISH=0)."
+  exit 0
+fi
+echo ">> Updating the F-Droid repo"
+if ! "$SCRIPT_DIR/scripts/fdroid-publish.sh"; then
+  echo "!! F-Droid repo update failed — the BAM Store publish above still succeeded." >&2
+fi

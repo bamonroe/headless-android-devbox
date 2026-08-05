@@ -181,6 +181,12 @@ owns index generation and signing for the F-Droid-style APK repo.
   regenerates its `config.yml` from `config.yaml`, and `scripts/fdroid-sync-apks.sh`
   copies the store's binaries into `repo/` (skipping androidTest APKs). Layout table:
   `README.md` → "The repo layout, and what's committed".
+- **`scripts/fdroid-publish.sh`** is the composite step (sync APKs → project
+  metadata → `fdroid update -c`), and `build.sh` runs it after every successful
+  BAM Store publish so both indexes stay in sync; `FDROID_PUBLISH=0` opts out.
+  Metadata generation itself lives in `scripts/fdroid_metadata.py` (yml merge
+  rules, changelogs, the icons-come-from-the-APK decision) behind the
+  `scripts/fdroid-metadata.sh` path wrapper.
 - Drive it with **`scripts/fdroid.sh`** (`init`, `update -c`, `deploy`, `shell`) —
   never with a hand-typed `docker run`. It mounts `directories.fdroid-repo` at
   `/repo` and `directories.fdroid-keystore` read-only at `/keystore`, and runs as the
