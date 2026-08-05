@@ -81,6 +81,36 @@ serves straight out of `store/repo`. Caddy runs as the `/data/caddy-docker` cont
 `apps.bam` root is bind-mounted there, and the Caddyfile itself is edited
 through the `/data/caddyedit` API rather than by hand.
 
+## F-Droid repo toolbox
+
+The APK repo is moving to an F-Droid-style repo with a signed index. The tooling for
+that is a third container (`Dockerfile.fdroid`, tag `fdroid:local`) built on top of
+the builder image, so it reuses the same JDK + Android SDK (`aapt2`, `apksigner`):
+
+```bash
+docker build -f Dockerfile.builder -t android-builder:local .   # once, if missing
+docker build -f Dockerfile.fdroid  -t fdroid:local .
+
+scripts/fdroid.sh init          # first-time repo setup
+scripts/fdroid.sh update -c     # rescan APKs, regenerate + sign the index
+scripts/fdroid.sh deploy        # push the repo to its serving location
+scripts/fdroid.sh shell         # interactive poke-around
+```
+
+`scripts/fdroid.sh` runs a throwaway container as your own uid (nothing comes back
+root-owned) and reads its paths from `config.yaml`: `directories.fdroid-repo` is
+mounted at `/repo` and `directories.fdroid-keystore` read-only at `/keystore`. The
+repo's public URL, name, description and key alias live in the `fdroid:` section of
+`config.yaml`. The same image is also a `tools`-profile compose service, so
+`docker compose --profile tools run --rm fdroid fdroid update` works; it never starts
+with a plain `docker compose up`.
+
+| Variable | Read by | Default | What it does |
+|---|---|---|---|
+| `FDROID_IMAGE` | `scripts/fdroid.sh` | `fdroid:local` | The fdroidserver container image. |
+| `FDROID_REPO` | `scripts/fdroid.sh`, compose | `directories.fdroid-repo` from `config.yaml` | Repo dir mounted at `/repo`. |
+| `FDROID_KEYSTORE` | `scripts/fdroid.sh`, compose | `directories.fdroid-keystore` from `config.yaml` | Signing keystore mounted read-only at `/keystore`. |
+
 ## Install & test the app on the emulator
 
 ```bash

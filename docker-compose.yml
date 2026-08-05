@@ -30,6 +30,26 @@ services:
     restart: "no"
     networks: [android-net]
 
+  # F-Droid repo toolbox. Not a long-running service — it sits behind the `tools`
+  # profile so a bare `docker compose up` never starts it. Day to day, drive it
+  # with scripts/fdroid.sh (which reads the paths from config.yaml); this service
+  # exists so `docker compose --profile tools run --rm fdroid <cmd>` works too.
+  fdroid:
+    build:
+      context: .
+      dockerfile: Dockerfile.fdroid
+    image: fdroid:local
+    profiles: [tools]
+    user: "${UID:-1000}:${GID:-1000}"
+    working_dir: /repo
+    environment:
+      HOME: /tmp
+    volumes:
+      - ${FDROID_REPO:-/data/storage/fdroid}:/repo
+      - ${FDROID_KEYSTORE:-/data/storage/fdroid-keys/keystore.p12}:/keystore:ro
+    restart: "no"
+    networks: [android-net]
+
 networks:
   android-net:
     driver: bridge

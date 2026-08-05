@@ -1,0 +1,44 @@
+# fdroidserver toolbox — the "F-Droid repo" layer of this Android home.
+#
+# Sibling to Dockerfile (emulator) and Dockerfile.builder (Gradle builds). This one
+# owns index generation and signing for the F-Droid-style APK repo: it runs
+# `fdroid init`, `fdroid update` and `fdroid deploy` against a repo directory
+# bind-mounted from the host.
+#
+# It is built FROM android-builder:local so the Android SDK (aapt2, apksigner,
+# zipalign, JDK 21) is reused rather than downloaded twice. Build the builder
+# image first:
+#
+#   docker build -f Dockerfile.builder -t android-builder:local .
+#   docker build -f Dockerfile.fdroid  -t fdroid:local .
+#
+# The mount contract:
+#   /repo      <- the fdroidserver repo dir (directories.fdroid-repo in config.yaml);
+#                 holds config.yml, repo/, metadata/, and the generated index
+#   /keystore  <- the repo SIGNING keystore, mounted read-only
+#                 (directories.fdroid-keystore in config.yaml)
+#
+# Always run it as the invoking uid so generated files aren't root-owned:
+#   docker run --rm --user "$(id -u):$(id -g)" ... fdroid:local fdroid update
+# `scripts/fdroid.sh` does all of that for you — use it instead of raw docker run.
+FROM android-builder:local
+
+# fdroidserver + its native deps. python3-venv keeps the install off the system
+# python; --no-install-recommends keeps the layer small.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        python3 python3-venv python3-dev python3-pip \
+        build-essential pkg-config \
+        libjpeg-dev zlib1g-dev libffi-dev libssl-dev \
+        rsync openssh-client gnupg \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m venv /opt/fdroid-venv \
+    && /opt/fdroid-venv/bin/pip install --no-cache-dir --upgrade pip \
+    && /opt/fdroid-venv/bin/pip install --no-cache-dir fdroidserver
+
+ENV PATH=/opt/fdroid-venv/bin:/opt/android-sdk/cmdline-tools/latest/bin:/opt/android-sdk/platform-tools:/opt/android-sdk/build-tools/35.0.0:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+    ANDROID_HOME=/opt/android-sdk
+
+# The repo dir is the working dir: every fdroid subcommand operates on ".".
+WORKDIR /repo
+CMD ["fdroid", "--help"]
