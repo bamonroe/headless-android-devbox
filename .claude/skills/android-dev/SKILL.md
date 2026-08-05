@@ -149,19 +149,28 @@ wireless debugging.
 
 ## Publishing a finished APK to the app store
 
-Once a build is *finished* (a real release, not a throwaway debug iteration), publish
-it to the private app store so it's installable on any of the owner's devices. The
-store lives at the `bam-store` path in `config.yaml` (`./config.sh get directories
-bam-store`); see that repo's own docs for the contract.
+**`/data/android/build.sh` already publishes for you.** After a successful build it
+runs the BAM Store publisher for each APK that build produced, then re-syncs the
+F-Droid index — so a normal build is already in the store. Set `BAM_STORE_PUBLISH=0`
+for scratch builds you don't want published, and `BAM_STORE_CHANGELOG` to set the
+changelog text.
+
+The store is **in this repo** at `/data/android/store` (`directories.bam-store` in
+`config.yaml` is only an override). Its contract lives in `store/CLAUDE.md`.
+Publish by hand only for an APK built outside `build.sh`:
 
 ```sh
-STORE=$(cd /data/android && ./config.sh get directories bam-store)
-"$STORE"/tools/publish path/to/app.apk --changelog "What changed"
+/data/android/store/tools/publish path/to/app.apk --changelog "What changed"
 ```
 
 `publish` extracts the package/version/icon/size with `aapt2`, copies the APK into the
-store repo, records the changelog, and regenerates the index (highest `versionCode`
-wins per package).
+store payload dir, records the changelog, and regenerates the index (highest
+`versionCode` wins per package).
+
+The same APKs are mirrored into the signed F-Droid repo by
+`/data/android/scripts/fdroid-publish.sh`, which `build.sh` also runs; drive that
+toolbox with `scripts/fdroid.sh` (`init`, `update -c`, `deploy`, `shell`) rather than
+a hand-typed `docker run`.
 
 - **Publish the release APK, not the debug one**, for real use
   (`:app:assembleRelease`). **Bump `versionCode`** (and usually `versionName`) before
