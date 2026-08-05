@@ -56,6 +56,12 @@ the BAM Store from `config.yaml` `directories.bam-store`, making them available
 through the private app repo. Set `BAM_STORE_PUBLISH=0` for a local build only, or
 set `BAM_STORE_CHANGELOG="..."` to control the store changelog. See CLAUDE.md.
 
+The store itself now lives in this repo under `store/`. Its APK payload does not:
+`config.yaml` `directories.bam-store-apks` points the binaries at the big disk
+(`build.sh` passes it through as `BAM_STORE_APKS`), so hundreds of MB of APKs stay
+off the system disk and out of git while `store/repo/` keeps the small, committed
+parts. Serving maps `/apks/` at the payload dir — see `store/repo/Caddyfile.example`.
+
 ## Install & test the app on the emulator
 
 ```bash

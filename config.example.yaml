@@ -26,6 +26,7 @@ directories:
   storage: /srv/storage       # big disk; SDK + AVD live under <storage>/android
   scaffold: /srv/android      # this repo's checkout (the docker-compose dir)
   bam-store: /srv/app-store   # optional: a private app-store repo to publish to
+  bam-store-apks: /srv/storage/app-store/apks  # its APK payload — big disk, never in git
 
 # Generic passthrough environment variables for the tooling. Optional — leave
 # empty, or add KEY: value pairs that scripts/containers should see.

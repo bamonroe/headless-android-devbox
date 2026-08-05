@@ -102,7 +102,12 @@ if [ -z "$STORE" ] || [ ! -x "$STORE/tools/publish" ]; then
   exit 1
 fi
 
-echo ">> Publishing APK(s) to BAM Store: $STORE"
+# The APK binaries live on the big disk, not beside the tools — see
+# directories.bam-store-apks in config.yaml.
+BAM_STORE_APKS="${BAM_STORE_APKS:-$("$SCRIPT_DIR/config.sh" get directories bam-store-apks || true)}"
+export BAM_STORE_APKS
+
+echo ">> Publishing APK(s) to BAM Store: $STORE (payload: ${BAM_STORE_APKS:-in-repo})"
 for apk in "${APKS[@]}"; do
   "$STORE/tools/publish" "$apk" --changelog "$BAM_STORE_CHANGELOG"
 done

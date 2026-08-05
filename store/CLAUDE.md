@@ -41,6 +41,15 @@ configured base URL. One entry per package (highest `versionCode` wins).
 
 ### What's committed vs. generated
 
+The APK binaries do not live beside the tools at all: `BAM_STORE_APKS` points
+them at the big disk (`directories.bam-store-apks` in `/data/android/config.yaml`,
+currently `/data/storage/bam-store/apks`), because 300+ MB of payload must never
+land on the system disk or in git. `tools/publish` and `tools/reindex` read that
+variable; `/data/android/build.sh` exports it automatically. The changelog
+sidecars stay in `repo/apks/` inside git, and the index still advertises
+`apks/<file>` — the server maps that prefix at the payload dir (see
+`repo/Caddyfile.example`).
+
 `index.json`, the APK binaries (`repo/apks/*.apk`), and extracted icons
 (`repo/icons/*`) are all **gitignored** — they are the store's payload/derived
 artifacts, regenerable from the APKs with `tools/reindex`. What *is* committed is

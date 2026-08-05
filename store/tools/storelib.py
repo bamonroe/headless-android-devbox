@@ -7,6 +7,14 @@ The repository is a plain directory of APKs plus a generated ``index.json``:
       icons/  <package>.<ext>
       index.json
 
+The APK binaries are the one part that must **not** sit on the system disk (they
+run to hundreds of MB), so ``BAM_STORE_APKS`` may point them at a big disk while
+the tiny committed changelog sidecars stay in ``repo/apks/`` inside git. When it
+is unset both live together and the layout above is literal. Either way the
+``apk`` field in the index stays the repo-relative ``apks/<file>`` the client
+expects, so the split is invisible over HTTP as long as the server maps
+``/apks/`` at the same directory (see repo/Caddyfile.example).
+
 Metadata is read straight out of each APK with ``aapt2 dump badging`` so the
 index is always fully regenerable from the APK files on disk (see reindex).
 """
@@ -26,7 +34,8 @@ REPO_DIR = os.environ.get(
     "BAM_STORE_REPO",
     os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "repo"),
 )
-APKS_DIR = os.path.join(REPO_DIR, "apks")
+SIDECARS_DIR = os.path.join(REPO_DIR, "apks")
+APKS_DIR = os.environ.get("BAM_STORE_APKS") or SIDECARS_DIR
 ICONS_DIR = os.path.join(REPO_DIR, "icons")
 INDEX_PATH = os.path.join(REPO_DIR, "index.json")
 SDK_DIR = os.environ.get("ANDROID_HOME") or os.path.expanduser("~/Android/Sdk")
@@ -128,14 +137,16 @@ def meta_for_apk(apk: str, changelog: str | None) -> AppMeta:
         minSdk=b["minSdk"],
         size=os.path.getsize(apk),
         sha256=sha256(apk),
-        apk=os.path.relpath(apk, REPO_DIR),
+        apk=f"apks/{os.path.basename(apk)}",
         icon=icon,
         changelog=changelog,
     )
 
 
 def sidecar_path(apk: str) -> str:
-    return os.path.splitext(apk)[0] + ".json"
+    """Where an APK's changelog sidecar lives — beside it, or in the git dir."""
+    name = os.path.splitext(os.path.basename(apk))[0] + ".json"
+    return os.path.join(SIDECARS_DIR, name)
 
 
 def write_index(apps: list[AppMeta], name: str = "BAM Store") -> None:

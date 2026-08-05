@@ -36,6 +36,7 @@ def main() -> int:
 
     if args.changelog:
         import json
+        os.makedirs(S.SIDECARS_DIR, exist_ok=True)
         with open(S.sidecar_path(dest), "w") as f:
             json.dump({"changelog": args.changelog}, f, indent=2)
 

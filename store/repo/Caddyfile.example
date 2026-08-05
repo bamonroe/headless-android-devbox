@@ -5,9 +5,21 @@
 # /etc/caddy/Caddyfile:
 #
 #     apps.bam:80 {
-#         root * /data/bam-store/repo
-#         file_server
+#         handle /apks/* {
+#             root * /data/storage/bam-store
+#             file_server
+#         }
+#         handle {
+#             root * /data/android/store/repo
+#             file_server
+#         }
 #     }
+#
+# Two roots because the store is split: index.json, icons and the committed
+# changelog sidecars live in the git checkout, while the APK binaries (hundreds
+# of MB) live on the big disk under directories.bam-store-apks from
+# config.yaml. The client sees one flat repo either way — `apks/<file>` URLs
+# resolve through the first handle.
 #
 # Plain HTTP is intentional: everything is reached over Tailscale, which already
 # encrypts and authenticates the connection, so TLS would just re-wrap an
