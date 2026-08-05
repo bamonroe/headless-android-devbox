@@ -17,6 +17,28 @@ finish_work = "Tasks arrive here via `scripts/todo.sh done <id>`; newest first, 
 growth = "This file only grows; nothing is removed from it."
 
 [[task]]
+id = "merge-bam-store-into-data-android-as-the-single-android-home"
+title = "Merge BAM Store into /data/android as the single Android home"
+description = "Merge the BAM Store project (/data/bam-store) into this repo so /data/android becomes everything Android: the APK repository, the build tools (build.sh + Dockerfile.builder), and the headless emulator. Beyond a straight merge, the APK repo should become an F-Droid-style repo, which means bringing in an F-Droid repo container (index generation/signing, fdroidserver, serving the repo) alongside the existing store publisher. Scope out the migration path (repo layout, history, config.yaml keys, publish pipeline, docs) as child scope/task items before implementing."
+status = "finished"
+level = "epic"
+category = "feature"
+created = 2026-08-05
+completed = 2026-08-05
+tags = ["merge", "bam-store", "fdroid", "epic"]
+
+[[task]]
+id = "decide-the-fate-of-the-com-bam-store-client-under-f-droid"
+title = "Decide the fate of the com.bam.store client under F-Droid"
+description = "Investigate store/client (com.bam.store) to determine what it costs to point it at the signed F-Droid index-v2.json instead of the custom index.json, and weigh that against retiring it and using the standard F-Droid client. Look at how the client parses the index, handles installs, and whether it relies on fields F-Droid doesn't provide. Produce concrete tasks for whichever path is chosen; if the client is retired, one of them is removing it from this repo and unpublishing it from the store."
+status = "finished"
+level = "scope"
+category = "feature"
+created = 2026-08-05
+completed = 2026-08-05
+tags = []
+
+[[task]]
 id = "stop-publishing-androidtest-apks-to-the-store"
 title = "Stop publishing androidTest APKs to the store"
 description = "build.sh publishes every APK under build/outputs/apk/, including app-debug-androidTest.apk, so instrumentation packages like com.bam.store.test and com.bam.sshfs.test show up as store apps. Filter out build/outputs/apk/androidTest/** in build.sh and prune the existing *.test entries from the store payload plus index.json."

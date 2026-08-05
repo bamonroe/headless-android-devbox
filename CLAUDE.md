@@ -218,7 +218,7 @@ publisher run per APK, and then re-syncs the F-Droid index via
 publish)".
 
 Everything else about the store — the `repo/index.json` contract, what's committed
-versus generated, the `com.bam.store` client, manual `tools/publish` / `tools/reindex`
+versus generated, manual `tools/publish` / `tools/reindex`
 use, and serving — lives in **`store/CLAUDE.md`**. Go there rather than restating it.
 
 ## Storage layout

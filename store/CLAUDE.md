@@ -4,27 +4,26 @@ The **store spoke** of the docs map in `/data/android/CLAUDE.md`. That root file
 hub: conventions, the container-first style guide, the two adb worlds, `build.sh` and
 its automatic publish step all live there, and `README.md` there owns the user-facing
 commands and env knobs. This file owns only what is specific to the store: the
-`repo/index.json` contract, what's committed versus generated, the `com.bam.store`
-client's install flow, and how the repo is served.
+`repo/index.json` contract, what's committed versus generated, and how the repo is
+served.
 
 ## What this is
 
 A private, self-hosted Android app store — a personal F-Droid — distributing the apps
-built on this box to the owner's own devices. Two independent pieces:
+built on this box to the owner's own devices. It is `repo/` + `tools/`: a *static*
+repository (a directory of APKs + a generated `index.json`) and a Python CLI that
+publishes into it. No server code, no database; the repo is served as static files by
+Caddy.
 
-- **`client/`** — a native Kotlin + Jetpack Compose Android app (`com.bam.store`)
-  that fetches a catalog over HTTP(S), downloads APKs, and installs them via the
-  platform `PackageInstaller`.
-- **`repo/`** + **`tools/`** — a *static* repository (a directory of APKs + a
-  generated `index.json`) and a Python CLI that publishes into it. No server code,
-  no database; the repo is served as static files by Caddy.
+Every published APK is also mirrored into a **signed F-Droid-format repo**, and that
+is now the only client story — the standard F-Droid app subscribes to it. The toolbox
+and its scripts are owned by the root `CLAUDE.md` → "The F-Droid repo container".
 
-The client talks to the repo over plain HTTP(S): `GET index.json`, then
-`GET apks/<file>`. That contract (below) is the only coupling between the two
-halves — either can be rebuilt independently as long as the JSON shape holds.
-
-The store is also mirrored into an F-Droid-format repo; that toolbox and its
-scripts are owned by the root `CLAUDE.md` → "The F-Droid repo container".
+**The custom `com.bam.store` client was retired** (2026-08-05) rather than reworked to
+parse `index-v2.json`: the F-Droid app already does signed indexes, updates, and the
+install flow correctly. `store/client/` and the published `com.bam.store` APKs are
+gone. `index.json` stays because the tools and the F-Droid mirror are both built on
+it; treat it as an internal format with no external consumer.
 
 ## Repository contract (`repo/index.json`)
 
@@ -86,37 +85,11 @@ publish)". One parsing gotcha worth keeping: the badging field is
 `minSdkVersion:'…'` with a capital S, so a `sdkVersion` regex silently matches
 nothing.
 
-## Building and installing the client
+## Using the repo from the F-Droid app
 
-Build `client/` like any other app here — through the disposable build container
-(`/data/android/build.sh client`), which also publishes the resulting APK into this
-store. Installing and driving it on the emulator or a physical device is the
-`android-dev` skill's job; don't hand-drive adb. Both are covered by the root
-`CLAUDE.md`, which also explains why the debug keystore is pinned per project so
-`adb install -r` keeps working across rebuilds.
-
-## The install flow (the part that actually matters)
-
-`com.bam.store` is an *ordinary* installer, not a privileged/system one, so every
-install requires the user to confirm a system dialog. The flow spans three files:
-
-1. `data/RepoClient.kt` streams the APK into `cacheDir`.
-2. `install/ApkInstaller.kt` opens a `PackageInstaller` session, writes the APK,
-   and commits with a `PendingIntent` (must be `FLAG_MUTABLE` on API 31+). The
-   status `Intent` **must name `InstallResultReceiver` by explicit component**
-   (`Intent(context, InstallResultReceiver::class.java)`) — the receiver is a
-   manifest receiver with no `<intent-filter>`, so an action-only broadcast is
-   silently never delivered, the confirm dialog never launches, and the install
-   hangs after download. (This was a real bug; don't reintroduce it.)
-3. `install/InstallResultReceiver.kt` receives the session callback. The normal
-   path is `STATUS_PENDING_USER_ACTION` → it launches the OS confirm dialog.
-   Terminal success/failure is republished on the process-static
-   `InstallEvents` flow that `MainActivity` collects.
-
-The app declares `REQUEST_INSTALL_PACKAGES`, but the user must *also* grant
-"Install unknown apps" to it once in system settings, or every install is
-rejected. `QUERY_ALL_PACKAGES` is what lets the catalog show installed-vs-update
-state (`PackageManager.getPackageInfo`).
+Add the signed F-Droid repo in the F-Droid app (URL and fingerprint below, under
+"Serving the repo"). Installs then go through F-Droid's own flow — it asks for the
+"Install unknown apps" permission once, and handles updates from the signed index.
 
 ## Serving the repo
 
@@ -133,8 +106,15 @@ apps.bam:80 {
 That record is managed through the **`caddyedit` Record API (the `caddy` skill)**,
 not by hand-editing `/etc/caddy/Caddyfile` — to change the route (port, path, add a
 token matcher), mutate the `apps.bam:80` record and apply. `repo/Caddyfile.example`
-documents the same block for reference. The client defaults to `http://apps.bam/`
-(`data/Settings.kt`).
+documents the same block for reference.
+
+**The F-Droid repo** is served separately at **`http://fdroid.bam/repo`** (`fdroid.url`
+in `config.yaml`), out of `directories.fdroid-repo`. That is the URL to add in the
+F-Droid app, with the signing key's fingerprint:
+
+```
+http://fdroid.bam/repo?fingerprint=11706E44EBB05B2D842097C34671D7C1BC14F52450693C48D800CAC5B00BC5C1
+```
 
 **Plain HTTP is intentional.** Everything is reached over Tailscale, which already
 encrypts and authenticates the connection, so TLS would just re-wrap an encrypted
@@ -142,7 +122,6 @@ tunnel. `apps.bam` is a MagicDNS name resolving to this box (`100.64.0.2`) — t
 same `*.bam` pattern as the box's other tailnet sites; no public DNS is involved.
 Both the emulator (via the container's inherited DNS) and the Pixel 8a resolve it.
 
-**Auth is currently off** — access is limited by Tailscale ACLs. The client still
-supports a bearer token: set one in its settings and it sends
-`Authorization: Bearer <token>` on every request (index, APK, and icon). To gate
-the repo, add a matching token check to the `apps.bam` Caddy record.
+**Auth is off** — access is limited by Tailscale ACLs, and the F-Droid index is
+signed, so tampering is detectable even without transport auth. To gate the repo,
+add a token check to the Caddy record.
