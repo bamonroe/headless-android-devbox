@@ -17,6 +17,17 @@ finish_work = "Tasks arrive here via `scripts/todo.sh done <id>`; newest first, 
 growth = "This file only grows; nothing is removed from it."
 
 [[task]]
+id = "stop-publishing-androidtest-apks-to-the-store"
+title = "Stop publishing androidTest APKs to the store"
+description = "build.sh publishes every APK under build/outputs/apk/, including app-debug-androidTest.apk, so instrumentation packages like com.bam.store.test and com.bam.sshfs.test show up as store apps. Filter out build/outputs/apk/androidTest/** in build.sh and prune the existing *.test entries from the store payload plus index.json."
+status = "finished"
+level = "task"
+category = "bug"
+created = 2026-08-05
+completed = 2026-08-05
+tags = []
+
+[[task]]
 id = "update-the-android-dev-skill-for-the-merged-store"
 title = "Update the android-dev skill for the merged store"
 description = "The skill's publishing section resolves the store via config.sh get directories bam-store and points at 'that repo's own docs'. Point it at the in-repo /data/android/store instead, note that build.sh now publishes automatically, and leave a placeholder for the fdroid container commands once those tasks land."

@@ -74,18 +74,23 @@ docker run --rm \
   "$IMAGE" \
   ./gradlew --no-daemon "$@"
 
+# Publishable APKs under the project. Instrumentation packages built by
+# connectedAndroidTest land in build/outputs/apk/androidTest/** and are *not* apps —
+# publishing them puts entries like com.bam.store.test in the store, so they're excluded.
+find_apks() {
+  find "$PROJECT" -path '*/build/outputs/apk/*.apk' \
+    -not -path '*/build/outputs/apk/androidTest/*' \
+    -type f "$@" -printf '%p\n' 2>/dev/null | sort
+}
+
 # APKs this build actually (re)wrote — the normal case.
-mapfile -t APKS < <(
-  find "$PROJECT" -path '*/build/outputs/apk/*.apk' -newer "$STAMP" -type f -printf '%p\n' 2>/dev/null | sort
-)
+mapfile -t APKS < <(find_apks -newer "$STAMP")
 # Up-to-date build: Gradle rewrote nothing, so nothing is newer than the stamp. Fall back to
 # the APKs already on disk so the BAM Store still gets (re)published without a clean rebuild.
 # Publishing is idempotent — the store keys each release by the APK's versionCode and
 # overwrites that slot, so republishing an unchanged build just re-writes the same entry.
 if [ "${#APKS[@]}" -eq 0 ]; then
-  mapfile -t APKS < <(
-    find "$PROJECT" -path '*/build/outputs/apk/*.apk' -type f -printf '%p\n' 2>/dev/null | sort
-  )
+  mapfile -t APKS < <(find_apks)
 fi
 
 echo ">> Done. APK(s):"

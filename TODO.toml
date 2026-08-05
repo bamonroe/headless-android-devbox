@@ -43,15 +43,3 @@ urgency = "normal"
 order = 130
 created = 2026-08-05
 tags = []
-
-[[task]]
-id = "stop-publishing-androidtest-apks-to-the-store"
-title = "Stop publishing androidTest APKs to the store"
-description = "build.sh publishes every APK under build/outputs/apk/, including app-debug-androidTest.apk, so instrumentation packages like com.bam.store.test and com.bam.sshfs.test show up as store apps. Filter out build/outputs/apk/androidTest/** in build.sh and prune the existing *.test entries from the store payload plus index.json."
-status = "active"
-level = "task"
-category = "bug"
-urgency = "normal"
-order = 180
-created = 2026-08-05
-tags = []
