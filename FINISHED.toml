@@ -17,6 +17,17 @@ finish_work = "Tasks arrive here via `scripts/todo.sh done <id>`; newest first, 
 growth = "This file only grows; nothing is removed from it."
 
 [[task]]
+id = "scope-the-f-droid-style-repo-container"
+title = "Scope the F-Droid-style repo container"
+description = "Investigate turning the static index.json store into an F-Droid-style repo: containerize fdroidserver (fdroid update//fdroid deploy), signed repo/index-v1.json + index-v2.json, a repo signing keystore kept out of git, metadata/ per-package yml, and icon/screenshot handling. Decide whether F-Droid format replaces the custom index.json or is generated alongside it during a transition, and what that means for the existing BAM Store client (com.bam.store) vs just using the F-Droid client. Follow this repo's Docker-first convention: a Dockerfile + docker-compose service next to the emulator."
+status = "finished"
+level = "scope"
+category = "feature"
+created = 2026-08-05
+completed = 2026-08-05
+tags = ["fdroid", "container"]
+
+[[task]]
 id = "retire-the-old-data-bam-store-checkout"
 title = "Retire the old /data/bam-store checkout"
 description = "Retire /data/bam-store. Done: the 327M APK payload lives at /data/android/store/repo (hardlinked back into the old repo dir so serving keeps working), config.yaml/build.sh/skills point at the merged store, and no live config outside Caddy references the old path. The remaining root-only steps are scripted in scripts/retire-bam-store.sh: it backs up /etc/caddy/Caddyfile, repoints the apps.bam root from /data/bam-store/repo to /data/android/store/repo, validates + reloads caddy, checks index.json and an .apk return 200, then renames the checkout to /data/bam-store.retired. BLOCKED on someone running 'sudo /data/android/scripts/retire-bam-store.sh' (no passwordless sudo here). Delete the .retired dir after one clean publish cycle from the new home."

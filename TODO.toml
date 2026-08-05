@@ -33,18 +33,6 @@ created = 2026-08-05
 tags = ["merge", "bam-store", "fdroid", "epic"]
 
 [[task]]
-id = "scope-the-f-droid-style-repo-container"
-title = "Scope the F-Droid-style repo container"
-description = "Investigate turning the static index.json store into an F-Droid-style repo: containerize fdroidserver (fdroid update//fdroid deploy), signed repo/index-v1.json + index-v2.json, a repo signing keystore kept out of git, metadata/ per-package yml, and icon/screenshot handling. Decide whether F-Droid format replaces the custom index.json or is generated alongside it during a transition, and what that means for the existing BAM Store client (com.bam.store) vs just using the F-Droid client. Follow this repo's Docker-first convention: a Dockerfile + docker-compose service next to the emulator."
-status = "active"
-level = "scope"
-category = "feature"
-urgency = "normal"
-order = 60
-created = 2026-08-05
-tags = ["fdroid", "container"]
-
-[[task]]
 id = "scope-unifying-the-publish-pipeline-after-the-merge"
 title = "Scope unifying the publish pipeline after the merge"
 description = "build.sh currently shells out to an external BAM Store publisher at directories.bam-store from config.yaml. After the merge that path is in-repo, and eventually the F-Droid indexer becomes the publisher. Scope the new flow: build APK -> place in repo -> regenerate/sign index -> serve, including BAM_STORE_PUBLISH / BAM_STORE_CHANGELOG env knobs, aapt2 metadata extraction in tools/storelib.py, and whether publish becomes a thin wrapper over the fdroid container."
@@ -89,5 +77,89 @@ level = "task"
 category = "chore"
 urgency = "normal"
 order = 100
+created = 2026-08-05
+tags = []
+
+[[task]]
+id = "build-an-fdroidserver-container-image"
+title = "Build an fdroidserver container image"
+description = "Add Dockerfile.fdroid (tag fdroid:local) with fdroidserver + Android build-tools/aapt2 and a docker-compose service alongside the emulator, per this repo's Docker-first convention. It must be able to run 'fdroid init', 'fdroid update' and 'fdroid deploy' against a repo directory bind-mounted from the host, running as the invoking uid so generated files aren't root-owned. Add a thin scripts/fdroid.sh wrapper so nothing load-bearing lives in shell history."
+status = "active"
+level = "task"
+category = "feature"
+urgency = "normal"
+order = 110
+created = 2026-08-05
+tags = []
+
+[[task]]
+id = "create-and-secure-the-f-droid-repo-signing-keystore"
+title = "Create and secure the F-Droid repo signing keystore"
+description = "Generate the repo signing keystore used by 'fdroid update' once, store it outside git (under directories.storage from config.yaml, e.g. <storage>/android/fdroid/keystore), and add a config.yaml key (directories.fdroid-keystore or similar) plus config.example.yaml documentation. Ensure .gitignore covers any keystore/config.py/keypass files that fdroidserver writes into the repo dir. Document the one-time setup in README.md."
+status = "active"
+level = "task"
+category = "chore"
+urgency = "normal"
+order = 120
+created = 2026-08-05
+tags = []
+
+[[task]]
+id = "lay-out-and-initialize-the-f-droid-repo-directory"
+title = "Lay out and initialize the F-Droid repo directory"
+description = "Decide the on-disk layout for the F-Droid repo under store/ (e.g. store/fdroid/{repo,metadata,unsigned}) versus the existing store/repo with index.json, run 'fdroid init' through the container, and populate repo/ from the existing store/repo/apks APKs. Decide what is committed vs git-ignored (APKs and generated index files are build artifacts). Result: a working repo whose index-v1.json/index-v2.json validate and are signed."
+status = "active"
+level = "task"
+category = "feature"
+urgency = "normal"
+order = 130
+created = 2026-08-05
+tags = []
+
+[[task]]
+id = "generate-per-package-f-droid-metadata-from-the-existing-store-data"
+title = "Generate per-package F-Droid metadata from the existing store data"
+description = "Write the metadata/<package>.yml files F-Droid needs (Name, Summary, Description, License, Categories, AuthorName) for the packages already in store/repo/index.json, and port the existing changelog sidecars (apks/<pkg>-<code>.json) into F-Droid's per-version changelog layout (metadata/<pkg>/en-US/changelogs/<versionCode>.txt). Include icon and screenshot handling: storelib currently extracts icons via aapt2 and several apps have icon=null, so decide whether icons come from the APK or from metadata/<pkg>/en-US/icon.png."
+status = "active"
+level = "task"
+category = "feature"
+urgency = "normal"
+order = 140
+created = 2026-08-05
+tags = []
+
+[[task]]
+id = "run-f-droid-index-generation-alongside-the-existing-publisher"
+title = "Run F-Droid index generation alongside the existing publisher"
+description = "Extend the publish pipeline so a published APK lands in both the custom index.json store and the F-Droid repo during the transition: after tools/publish succeeds, copy the APK into the fdroid repo dir and run 'fdroid update' in the container. Keep BAM_STORE_PUBLISH=0 honoured and add a matching opt-out for the fdroid step. Both indexes stay in sync until the custom index.json is retired."
+status = "active"
+level = "task"
+category = "feature"
+urgency = "normal"
+order = 150
+created = 2026-08-05
+tags = []
+
+[[task]]
+id = "serve-the-f-droid-repo-over-https-via-caddy"
+title = "Serve the F-Droid repo over HTTPS via Caddy"
+description = "Expose the generated F-Droid repo (repo/ with index-v1.json, index-v2.json, and the APKs) at a stable URL so the F-Droid client can add it as a repository. Use the /data/caddyedit API to edit the Caddyfile without root and bind-mount the new root into the caddy container (see the editing-the-caddyfile-without-root memory). Update store/repo/Caddyfile.example and README.md with the resulting config, and verify by adding the repo in an F-Droid client."
+status = "active"
+level = "task"
+category = "feature"
+urgency = "normal"
+order = 160
+created = 2026-08-05
+tags = []
+
+[[task]]
+id = "decide-the-fate-of-the-com-bam-store-client-under-f-droid"
+title = "Decide the fate of the com.bam.store client under F-Droid"
+description = "Investigate store/client (com.bam.store) to determine what it costs to point it at the signed F-Droid index-v2.json instead of the custom index.json, and weigh that against retiring it and using the standard F-Droid client. Look at how the client parses the index, handles installs, and whether it relies on fields F-Droid doesn't provide. Produce concrete tasks for whichever path is chosen; if the client is retired, one of them is removing it from this repo and unpublishing it from the store."
+status = "active"
+level = "scope"
+category = "feature"
+urgency = "normal"
+order = 170
 created = 2026-08-05
 tags = []
