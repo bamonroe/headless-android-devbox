@@ -17,6 +17,28 @@ finish_work = "Tasks arrive here via `scripts/todo.sh done <id>`; newest first, 
 growth = "This file only grows; nothing is removed from it."
 
 [[task]]
+id = "delete-data-bam-store-retired-after-a-clean-publish-cycle"
+title = "Delete /data/bam-store.retired after a clean publish cycle"
+description = "The old checkout is renamed to /data/bam-store.retired and nothing references it (Caddy now serves /data/android/store/repo, bind-mounted into the caddy container). Run one publish through ./build.sh <project> from the merged home, confirm the new APK appears at http://apps.bam/index.json and downloads, then 'rm -rf /data/bam-store.retired' to reclaim ~327M of hardlinked payload."
+status = "finished"
+level = "task"
+category = "chore"
+created = 2026-08-05
+completed = 2026-08-05
+tags = []
+
+[[task]]
+id = "settle-and-document-the-publish-env-knobs"
+title = "Settle and document the publish env knobs"
+description = "BAM_STORE_PUBLISH, BAM_STORE_CHANGELOG and BAM_STORE_APKS are read in build.sh and storelib.py. Now that the store is in-repo, confirm the names, give them one authoritative documented home (README plus build.sh header), and make sure BAM_STORE_APKS still routes binaries to directories.bam-store-apks on the big disk."
+status = "finished"
+level = "task"
+category = "docs"
+created = 2026-08-05
+completed = 2026-08-05
+tags = []
+
+[[task]]
 id = "make-aapt2-metadata-extraction-container-based"
 title = "Make aapt2 metadata extraction container-based"
 description = "storelib.find_aapt2() globs SDK_DIR/build-tools on the host, so publishing depends on a host Android SDK that CLAUDE.md says should not exist. Run aapt2 dump badging inside the android-builder:local image (which already has build-tools) and fall back to a host aapt2 only if present."

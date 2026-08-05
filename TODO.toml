@@ -33,18 +33,6 @@ created = 2026-08-05
 tags = ["merge", "bam-store", "fdroid", "epic"]
 
 [[task]]
-id = "delete-data-bam-store-retired-after-a-clean-publish-cycle"
-title = "Delete /data/bam-store.retired after a clean publish cycle"
-description = "The old checkout is renamed to /data/bam-store.retired and nothing references it (Caddy now serves /data/android/store/repo, bind-mounted into the caddy container). Run one publish through ./build.sh <project> from the merged home, confirm the new APK appears at http://apps.bam/index.json and downloads, then 'rm -rf /data/bam-store.retired' to reclaim ~327M of hardlinked payload."
-status = "active"
-level = "task"
-category = "chore"
-urgency = "normal"
-order = 40
-created = 2026-08-05
-tags = []
-
-[[task]]
 id = "build-an-fdroidserver-container-image"
 title = "Build an fdroidserver container image"
 description = "Add Dockerfile.fdroid (tag fdroid:local) with fdroidserver + Android build-tools/aapt2 and a docker-compose service alongside the emulator, per this repo's Docker-first convention. It must be able to run 'fdroid init', 'fdroid update' and 'fdroid deploy' against a repo directory bind-mounted from the host, running as the invoking uid so generated files aren't root-owned. Add a thin scripts/fdroid.sh wrapper so nothing load-bearing lives in shell history."
@@ -153,18 +141,6 @@ created = 2026-08-05
 tags = []
 
 [[task]]
-id = "settle-and-document-the-publish-env-knobs"
-title = "Settle and document the publish env knobs"
-description = "BAM_STORE_PUBLISH, BAM_STORE_CHANGELOG and BAM_STORE_APKS are read in build.sh and storelib.py. Now that the store is in-repo, confirm the names, give them one authoritative documented home (README plus build.sh header), and make sure BAM_STORE_APKS still routes binaries to directories.bam-store-apks on the big disk."
-status = "active"
-level = "task"
-category = "docs"
-urgency = "normal"
-order = 30
-created = 2026-08-05
-tags = []
-
-[[task]]
 id = "add-the-store-spoke-to-the-claude-md-documentation-map"
 title = "Add the store spoke to the CLAUDE.md documentation map"
 description = "The hub-and-spoke table in CLAUDE.md has no row for the store. Add store/CLAUDE.md as the authoritative spoke for the APK repository (contract, committed-vs-generated, client, serving), and trim root CLAUDE.md's 'Publishing to the app store' section down to a pointer plus the build.sh integration facts it genuinely owns."
@@ -209,5 +185,17 @@ level = "task"
 category = "docs"
 urgency = "normal"
 order = 170
+created = 2026-08-05
+tags = []
+
+[[task]]
+id = "stop-publishing-androidtest-apks-to-the-store"
+title = "Stop publishing androidTest APKs to the store"
+description = "build.sh publishes every APK under build/outputs/apk/, including app-debug-androidTest.apk, so instrumentation packages like com.bam.store.test and com.bam.sshfs.test show up as store apps. Filter out build/outputs/apk/androidTest/** in build.sh and prune the existing *.test entries from the store payload plus index.json."
+status = "active"
+level = "task"
+category = "bug"
+urgency = "normal"
+order = 180
 created = 2026-08-05
 tags = []
