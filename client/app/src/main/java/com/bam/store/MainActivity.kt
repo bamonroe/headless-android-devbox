@@ -55,7 +55,11 @@ import com.bam.store.install.ApkInstaller
 import com.bam.store.install.InstallEvent
 import com.bam.store.install.InstallEvents
 import com.bam.store.ui.BamStoreTheme
+import java.io.FileInputStream
+import java.security.MessageDigest
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /** Single-activity host; the whole UI is the Compose [StoreScreen]. */
 class MainActivity : ComponentActivity() {
@@ -84,20 +88,32 @@ fun StoreScreen() {
     var catalog by remember { mutableStateOf<Catalog?>(null) }
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
-    // packageName -> installed versionCode (absent = not installed)
-    val installed = remember { mutableStateMapOf<String, Long>() }
+    // packageName -> installed package metadata (absent = not installed)
+    val installed = remember { mutableStateMapOf<String, InstalledApp>() }
     // packageName -> download progress (0f..1f) while an install is in flight
     val progress = remember { mutableStateMapOf<String, Float>() }
 
-    fun refreshInstalled(apps: List<CatalogApp>) {
-        for (app in apps) {
-            val code = try {
-                context.packageManager.getPackageInfo(app.packageName, 0).longVersionCode
-            } catch (e: PackageManager.NameNotFoundException) {
-                null
-            }
-            if (code != null) installed[app.packageName] = code else installed.remove(app.packageName)
+    suspend fun refreshInstalled(apps: List<CatalogApp>) {
+        val found = withContext(Dispatchers.IO) {
+            apps.mapNotNull { app ->
+                val info = try {
+                    context.packageManager.getPackageInfo(app.packageName, 0)
+                } catch (e: PackageManager.NameNotFoundException) {
+                    null
+                }
+                val sourceDir = info?.applicationInfo?.sourceDir
+                if (info != null && sourceDir != null) {
+                    app.packageName to InstalledApp(
+                        versionCode = info.longVersionCode,
+                        sha256 = sha256File(sourceDir),
+                    )
+                } else {
+                    null
+                }
+            }.toMap()
         }
+        installed.clear()
+        installed.putAll(found)
     }
 
     fun refresh() {
@@ -170,7 +186,7 @@ fun StoreScreen() {
                     items(catalog?.apps ?: emptyList(), key = { it.packageName }) { app ->
                         AppRow(
                             app = app,
-                            installedCode = installed[app.packageName],
+                            installedApp = installed[app.packageName],
                             progress = progress[app.packageName],
                             iconModel = iconRequest(context, settings, app),
                             onInstall = { installApp(app) },
@@ -194,16 +210,41 @@ private fun iconRequest(
     return b.build()
 }
 
+private data class InstalledApp(
+    val versionCode: Long,
+    val sha256: String,
+)
+
+private fun sha256File(path: String): String {
+    val digest = MessageDigest.getInstance("SHA-256")
+    FileInputStream(path).use { input ->
+        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+        while (true) {
+            val read = input.read(buffer)
+            if (read <= 0) break
+            digest.update(buffer, 0, read)
+        }
+    }
+    return digest.digest().joinToString("") { "%02x".format(it.toInt() and 0xff) }
+}
+
 @Composable
 private fun AppRow(
     app: CatalogApp,
-    installedCode: Long?,
+    installedApp: InstalledApp?,
     progress: Float?,
     iconModel: ImageRequest?,
     onInstall: () -> Unit,
 ) {
-    val updateAvailable = installedCode != null && installedCode < app.versionCode
-    val upToDate = installedCode != null && installedCode >= app.versionCode
+    val sameVersionDifferentApk = installedApp != null &&
+        installedApp.versionCode == app.versionCode &&
+        app.sha256.isNotBlank() &&
+        !installedApp.sha256.equals(app.sha256, ignoreCase = true)
+    val updateAvailable = installedApp != null &&
+        (installedApp.versionCode < app.versionCode || sameVersionDifferentApk)
+    val upToDate = installedApp != null &&
+        installedApp.versionCode >= app.versionCode &&
+        !sameVersionDifferentApk
 
     Row(
         Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
