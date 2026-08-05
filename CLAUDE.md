@@ -296,7 +296,7 @@ Documentation is part of the feature, not a follow-up.
 
 When task tracking starts here, `TODO.toml` is the single source of truth for **active**
 work and `FINISHED.toml` the archive of **completed** work. Both are TOML with structured
-metadata (`id`, `status`, `category`, `urgency`, `order`, `created`/`completed`, `tags`).
+metadata (`id`, `status`, `level`, `category`, `urgency`, `order`, `created`/`completed`, `tags`).
 **Drive them through the `todo` skill** (`scripts/todo.sh <command>`) rather than
 hand-editing, so ids, ordering, and metadata stay consistent.
 
