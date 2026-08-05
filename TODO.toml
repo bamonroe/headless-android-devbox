@@ -28,7 +28,7 @@ status = "active"
 level = "epic"
 category = "feature"
 urgency = "normal"
-order = 40
+order = 5
 created = 2026-08-05
 tags = ["merge", "bam-store", "fdroid", "epic"]
 
@@ -40,7 +40,7 @@ status = "active"
 level = "task"
 category = "chore"
 urgency = "normal"
-order = 100
+order = 40
 created = 2026-08-05
 tags = []
 
@@ -52,7 +52,7 @@ status = "active"
 level = "task"
 category = "feature"
 urgency = "normal"
-order = 110
+order = 60
 created = 2026-08-05
 tags = []
 
@@ -64,7 +64,7 @@ status = "active"
 level = "task"
 category = "chore"
 urgency = "normal"
-order = 120
+order = 70
 created = 2026-08-05
 tags = []
 
@@ -76,7 +76,7 @@ status = "active"
 level = "task"
 category = "feature"
 urgency = "normal"
-order = 130
+order = 80
 created = 2026-08-05
 tags = []
 
@@ -88,7 +88,7 @@ status = "active"
 level = "task"
 category = "feature"
 urgency = "normal"
-order = 140
+order = 90
 created = 2026-08-05
 tags = []
 
@@ -100,7 +100,7 @@ status = "active"
 level = "task"
 category = "feature"
 urgency = "normal"
-order = 150
+order = 100
 created = 2026-08-05
 tags = []
 
@@ -112,7 +112,7 @@ status = "active"
 level = "task"
 category = "feature"
 urgency = "normal"
-order = 160
+order = 120
 created = 2026-08-05
 tags = []
 
@@ -124,7 +124,7 @@ status = "active"
 level = "scope"
 category = "feature"
 urgency = "normal"
-order = 170
+order = 130
 created = 2026-08-05
 tags = []
 
@@ -136,7 +136,7 @@ status = "active"
 level = "task"
 category = "chore"
 urgency = "normal"
-order = 180
+order = 50
 created = 2026-08-05
 tags = []
 
@@ -148,7 +148,7 @@ status = "active"
 level = "task"
 category = "refactor"
 urgency = "normal"
-order = 190
+order = 10
 created = 2026-08-05
 tags = []
 
@@ -160,7 +160,7 @@ status = "active"
 level = "task"
 category = "refactor"
 urgency = "normal"
-order = 200
+order = 20
 created = 2026-08-05
 tags = []
 
@@ -172,7 +172,7 @@ status = "active"
 level = "task"
 category = "feature"
 urgency = "normal"
-order = 210
+order = 110
 created = 2026-08-05
 tags = []
 
@@ -184,7 +184,7 @@ status = "active"
 level = "task"
 category = "docs"
 urgency = "normal"
-order = 220
+order = 30
 created = 2026-08-05
 tags = []
 
@@ -196,7 +196,7 @@ status = "active"
 level = "task"
 category = "docs"
 urgency = "normal"
-order = 230
+order = 140
 created = 2026-08-05
 tags = []
 
@@ -208,7 +208,7 @@ status = "active"
 level = "task"
 category = "docs"
 urgency = "normal"
-order = 240
+order = 150
 created = 2026-08-05
 tags = []
 
@@ -220,7 +220,7 @@ status = "active"
 level = "task"
 category = "docs"
 urgency = "normal"
-order = 250
+order = 160
 created = 2026-08-05
 tags = []
 
@@ -232,6 +232,6 @@ status = "active"
 level = "task"
 category = "docs"
 urgency = "normal"
-order = 260
+order = 170
 created = 2026-08-05
 tags = []
