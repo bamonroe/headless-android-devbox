@@ -13,6 +13,25 @@ skill** (`.claude/skills/android-dev` here) — its `scripts/emulator.sh` and
 `scripts/adb-targets.sh` wrap everything below. Reach for the skill first; this file is
 the reference for what the skill is driving and how to change it.
 
+## Start here: the documentation map (hub-and-spoke)
+
+Documentation here is **de-duplicated** — every fact has exactly one authoritative home.
+Go to the owner below rather than restating a fact in a second file; link to the owner
+instead. Read this table first, then follow only the spoke your task needs.
+
+| You want to know / change…                        | Authoritative home |
+|---------------------------------------------------|--------------------|
+| **What to do next** (active tasks)                | `TODO.toml` (via the `todo` skill) |
+| **What's already done**                           | `FINISHED.toml` (via the `todo` skill) |
+| **How to work here** (conventions, decisions)     | `CLAUDE.md` (this file) |
+| **How a user runs this** (setup, bring-up, build) | `README.md` |
+| **Day-to-day emulator/device/build workflow**     | the `android-dev` skill (`.claude/skills/android-dev`) |
+| **Machine-specific values** (IPs, storage paths)  | `config.yaml` (git-ignored) |
+| **Per-app working notes**                         | `NOTES.local.md` (git-ignored) |
+
+`TODO.toml`/`FINISHED.toml` don't exist yet in this repo — create them through the `todo`
+skill the first time work needs tracking, rather than hand-writing them.
+
 ## Machine config — `config.yaml` (source of truth)
 
 All machine-specific values (physical-device IPs, storage/app-store paths) live in
@@ -118,6 +137,11 @@ cd /data/android
   new debug key. If a device already has an APK signed by an older throwaway key,
   use `run-as` to back up app data, uninstall once, install a fresh build, and
   restore the data; after that, `adb install -r` should work normally.
+- After a successful APK-producing build, `build.sh` publishes each new APK into
+  the BAM Store at `directories.bam-store` in `config.yaml`. Set
+  `BAM_STORE_PUBLISH=0` for scratch builds that should not update the store, and
+  set `BAM_STORE_CHANGELOG="..."` to control the changelog sidecar written by
+  the store's `tools/publish`.
 - Add a new app's SDK level to `Dockerfile.builder` (a `platforms;android-NN` +
   `build-tools;NN.x` line) and rebuild the image when its `compileSdk` isn't 34 or 35.
 
@@ -145,11 +169,14 @@ container start** — a fresh device each time. Remove the `-wipe-data` flag in
 `entrypoint.sh` to persist state (server URLs, keys, logins) across restarts when testing
 gets iterative.
 
-## Publishing a finished APK to the app store
+## Publishing to the app store
 
-When a build is *done* (not a throwaway debug iteration), publish it to the private app
-store (path in `config.yaml`, `directories.bam-store`) so it's installable on any of the
-owner's devices:
+Publishing is automatic for APKs produced by `/data/android/build.sh`: after Gradle
+finishes successfully, the script finds APKs written under `build/outputs/apk/` during
+that build and runs the BAM Store publisher for each one. The store path comes from
+`config.yaml`, `directories.bam-store`.
+
+Manual publishing is still available for APKs built outside this pipeline:
 
 ```bash
 STORE=$(./config.sh get directories bam-store)
@@ -157,10 +184,10 @@ STORE=$(./config.sh get directories bam-store)
 ```
 
 This copies the APK into `repo/apks/<pkg>-<versionCode>.apk`, extracts metadata via
-`aapt2`, and rebuilds `repo/index.json`. The `android-dev` skill documents when to do this
-as part of the build workflow. Bump `versionCode` in the app's `build.gradle` before
-publishing an update, or the store keeps only the highest existing code. See the store
-repo's own docs for the contract and serving details.
+`aapt2`, writes an optional changelog sidecar, and rebuilds `repo/index.json`. Bump
+`versionCode` in the app's `build.gradle` before publishing an update, or the store
+keeps only the highest existing code. See the store repo's own docs for the contract
+and serving details.
 
 ## Storage layout
 
@@ -198,3 +225,92 @@ they stay on this box but never get published. See that file for the current app
 See also `README.md` here (user-facing version), the `android-dev` skill, the app-store
 repo (`directories.bam-store` in `config.yaml`), and the memory notes
 `android-emulator-setup` / `android-emulator-and-phone-adb`.
+
+---
+
+## Development style guide — technology defaults (standing preferences)
+
+Standing defaults for *how* things get built. They apply to every project; deviate only
+with a concrete written reason recorded here.
+
+### Develop inside containers — Docker first, then Podman
+
+Do development, builds, and runs **inside containers**, not against the host toolchain — a
+fresh checkout should build and run through a container so the environment is reproducible
+and the host stays clean. This repo already embodies that: the emulator and the APK builder
+are both containers, and no JDK/SDK/Gradle is installed on the host.
+
+- **Prefer Docker** — write `Dockerfile`/`docker-compose.yml` for Docker and assume
+  `docker`/`docker compose` in scripts and docs.
+- **Fall back to Podman** where Docker isn't available; keep the setup Podman-compatible
+  (rootless-friendly, no Docker-only Compose features) and note command differences.
+- Note the one deliberate host dependency: `/dev/kvm` and the host's `/usr/bin/adb` for
+  physical devices (see the two-adb-worlds section above).
+
+### Web servers are written in Rust
+
+If anything here ever needs an HTTP/web-server component, write it in Rust with a mature
+async stack (`axum`/`tokio` or `actix-web`). Another language only with a reason recorded here.
+
+### Keep the code split up — no mono-files, no giant functions
+
+- **No single mono-file** and no mono-module — split along real boundaries, one clear
+  responsibility per file. That applies to the shell scripts here too: `config.sh`,
+  `build.sh`, `entrypoint.sh` and the skill's scripts stay separate and focused.
+- **Keep functions small — roughly 100 lines max.** Past that, extract helpers.
+- The point is navigation, documentation, and testing: a reader should find the right file
+  by its name, and each unit should be small enough to test in isolation.
+
+---
+
+## Working practices (standing preferences)
+
+### Git: commit atomically, at will and frequently — and push freely
+
+You have standing authorization to commit **and push** your own work without asking first.
+Never let work pile up uncommitted.
+
+- **Atomic commits**: one logical change each — a fix, a feature, a doc update, and a
+  refactor are separate commits. Commit the smallest coherent unit that builds clean.
+- Make the change → verify it → **commit**. Many small commits beat one large one; history
+  stays bisectable and revertable.
+- Concise **imperative** subject saying *why*, not just *what*.
+- **Commit before risky or large changes**; branch for anything speculative so `master`
+  stays runnable.
+- **Push freely** after committing — keeping the remote current is part of "done."
+- Never commit secrets, databases, or build artifacts. Here specifically: `config.yaml` and
+  `NOTES.local.md` are git-ignored and must stay that way.
+
+### A feature isn't done until it's documented
+
+Documentation is part of the feature, not a follow-up.
+
+- Every user-facing change gets documentation in `README.md` in the same pass; conventions
+  and how-it-fits go here; workflow details go in the `android-dev` skill.
+- Docs land in the **same commit** as the change (or immediately after).
+- Any script or command needed to build, run, publish, or operate this setup **must be
+  written down** — put reusable steps in a checked-in script and reference it from both
+  `README.md` and this file. Nothing load-bearing lives only in shell history.
+
+### `TODO.toml` (active) + `FINISHED.toml` (archive) — keep them current
+
+When task tracking starts here, `TODO.toml` is the single source of truth for **active**
+work and `FINISHED.toml` the archive of **completed** work. Both are TOML with structured
+metadata (`id`, `status`, `category`, `urgency`, `order`, `created`/`completed`, `tags`).
+**Drive them through the `todo` skill** (`scripts/todo.sh <command>`) rather than
+hand-editing, so ids, ordering, and metadata stay consistent.
+
+- Update them in the same commit as the work they describe.
+- When a task is fully finished (built, tested, documented), `scripts/todo.sh done <id>`
+  moves it into `FINISHED.toml`. Don't leave completed items in `TODO.toml`.
+- Journal next steps: when you finish something and spot the next piece, `add` it.
+- A stale `TODO.toml`/`FINISHED.toml` means the change isn't done.
+
+### Token discipline — keep the context small
+
+- **Read in slices, not whole files** — `grep`/`glob` to the target, then `Read` with
+  `offset`/`limit`. Never re-read a file you just edited.
+- **Delegate broad searches to `Explore` subagents** so file dumps stay out of this context.
+- **Don't restate; link** to the owning doc per the map above.
+- **Prefer targeted output** — pipe long output through `head`/`tail`/`grep`; don't cat
+  whole logs or list huge trees.
