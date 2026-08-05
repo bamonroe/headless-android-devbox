@@ -7,9 +7,13 @@ repo/index.json
 
 # Android build artifacts
 client/.gradle/
+client/.gradle-cache/
 client/build/
 client/app/build/
 client/local.properties
 client/.kotlin/
 
 __pycache__/
+
+# Publisher-written changelog sidecars — regenerated, not source.
+repo/apks/*.json
