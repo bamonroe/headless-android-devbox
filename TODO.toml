@@ -83,7 +83,7 @@ tags = ["docs", "skill"]
 [[task]]
 id = "retire-the-old-data-bam-store-checkout"
 title = "Retire the old /data/bam-store checkout"
-description = "Once store/ is imported and verified building, publishing and serving from /data/android, retire /data/bam-store: confirm nothing still references the old path (config.yaml directories.bam-store, build.sh, skills, Caddy units), repoint them at the merged location, then rename the old checkout to /data/bam-store.retired rather than deleting. Delete only after one clean publish cycle from the new home."
+description = "Retire /data/bam-store. Done so far: the 327M APK payload now lives at /data/android/store/repo/apks (hardlinked back into the old repo dir so serving keeps working), config.yaml/build.sh/skills already point at the merged store, and no live config outside Caddy references the old path. REMAINING (needs root): change /etc/caddy/Caddyfile 'apps.bam:80' root from /data/bam-store/repo to /data/android/store/repo, 'systemctl reload caddy', verify http://apps.bam/index.json and an .apk 200, then remove the hardlink copies and rename the checkout to /data/bam-store.retired. Delete only after one clean publish cycle from the new home."
 status = "in-progress"
 level = "task"
 category = "chore"
