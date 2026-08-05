@@ -81,6 +81,39 @@ serves straight out of `store/repo`. Caddy runs as the `/data/caddy-docker` cont
 `apps.bam` root is bind-mounted there, and the Caddyfile itself is edited
 through the `/data/caddyedit` API rather than by hand.
 
+## The BAM Store (`store/`)
+
+A private, self-hosted app store — a personal F-Droid that distributes the apps built
+here to your own devices. Three parts:
+
+| Path | What |
+| --- | --- |
+| `store/client/` | The store app (Kotlin + Jetpack Compose, `com.bam.store`) — browses the catalog, downloads APKs, installs them via `PackageInstaller`. |
+| `store/repo/` | The static repository: a generated `index.json`, icons, and changelog sidecars, served over the tailnet at `http://apps.bam/`. The APK binaries live on the big disk (above). |
+| `store/tools/` | `publish` and `reindex` — Python CLIs that read APK metadata with `aapt2` (in the builder container) and (re)generate `index.json`. |
+
+Publishing is automatic: every successful `./build.sh` run publishes its new APKs.
+To publish an APK built elsewhere, or to repair the index by hand:
+
+```bash
+store/tools/publish path/to/app.apk --changelog "What changed"   # extract, copy, reindex
+store/tools/reindex                                              # rebuild index.json from the APKs
+```
+
+`publish` extracts the package name, version, icon, and size, copies the APK to the
+payload dir, and rebuilds `index.json`. The changelog is saved in a committed sidecar
+(`store/repo/apks/<pkg>-<versionCode>.json`) so it survives a `reindex`; the APKs,
+icons, and `index.json` are gitignored regenerable payload.
+
+Serving is plain HTTP over Tailscale, which already encrypts the connection — see
+`store/repo/Caddyfile.example`, and edit the live record through the `/data/caddyedit`
+API. The client defaults to `http://apps.bam/`; install it the first time by
+sideloading its APK and granting it "Install unknown apps".
+
+Build the client like any other project here (`./build.sh store/client`). The
+`index.json` contract, the install flow, and the rest of the architecture are in
+[`store/CLAUDE.md`](store/CLAUDE.md).
+
 ## F-Droid repo toolbox
 
 The APK repo is moving to an F-Droid-style repo with a signed index. The tooling for

@@ -45,18 +45,6 @@ created = 2026-08-05
 tags = []
 
 [[task]]
-id = "fold-store-readme-md-into-the-root-readme"
-title = "Fold store/README.md into the root README"
-description = "README.md documents emulator, build, install and storage but never mentions the store; store/README.md separately covers layout, publishing, serving and building the client. Give the root README a publishing section covering the automatic build.sh publish and the manual tools/publish command, and reduce store/README.md to the store-local details or delete it."
-status = "active"
-level = "task"
-category = "docs"
-urgency = "normal"
-order = 160
-created = 2026-08-05
-tags = []
-
-[[task]]
 id = "update-the-android-dev-skill-for-the-merged-store"
 title = "Update the android-dev skill for the merged store"
 description = "The skill's publishing section resolves the store via config.sh get directories bam-store and points at 'that repo's own docs'. Point it at the in-repo /data/android/store instead, note that build.sh now publishes automatically, and leave a placeholder for the fdroid container commands once those tasks land."
