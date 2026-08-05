@@ -117,6 +117,9 @@ doesn't need any.
 
 - When you finish a task (built, tested, documented), run **`done <id>`** in the
   same commit that completes the work — don't leave shipped items in `TODO.toml`.
+- **After every `done <id>`, report back two things**: how many active tasks are
+  left (`count`), and a one-sentence summary of the very next task (the top item
+  from `list`) so the user always knows what's up next without asking.
 - When you notice the next thing to build, **`add`** it rather than losing it.
 - Prefer the CLI over hand-editing so metadata and ordering stay consistent; if
   you do hand-edit, run **`validate`** afterward.
