@@ -53,3 +53,63 @@ urgency = "normal"
 order = 40
 created = 2026-08-05
 tags = ["merge", "bam-store", "fdroid", "epic"]
+
+[[task]]
+id = "decide-the-merged-repo-layout-and-history-preservation-plan"
+title = "Decide the merged repo layout and history-preservation plan"
+description = "Design where /data/bam-store lands inside /data/android: proposed store/ (repo/, tools/, client/) vs top-level. Decide whether to preserve bam-store git history (git subtree/merge with --allow-unrelated-histories) or import as a squashed snapshot. Cover .gitignore reconciliation (repo/apks/*.apk, repo/icons/*, repo/index.json, client build dirs, __pycache__), the 327M untracked repo/apks payload which must stay out of git and probably stay on the big disk, and how the old /data/bam-store checkout is retired. Output concrete tasks."
+status = "active"
+level = "scope"
+category = "chore"
+urgency = "high"
+order = 50
+created = 2026-08-05
+tags = ["merge", "layout"]
+
+[[task]]
+id = "scope-the-f-droid-style-repo-container"
+title = "Scope the F-Droid-style repo container"
+description = "Investigate turning the static index.json store into an F-Droid-style repo: containerize fdroidserver (fdroid update//fdroid deploy), signed repo/index-v1.json + index-v2.json, a repo signing keystore kept out of git, metadata/ per-package yml, and icon/screenshot handling. Decide whether F-Droid format replaces the custom index.json or is generated alongside it during a transition, and what that means for the existing BAM Store client (com.bam.store) vs just using the F-Droid client. Follow this repo's Docker-first convention: a Dockerfile + docker-compose service next to the emulator."
+status = "active"
+level = "scope"
+category = "feature"
+urgency = "high"
+order = 60
+created = 2026-08-05
+tags = ["fdroid", "container"]
+
+[[task]]
+id = "scope-unifying-the-publish-pipeline-after-the-merge"
+title = "Scope unifying the publish pipeline after the merge"
+description = "build.sh currently shells out to an external BAM Store publisher at directories.bam-store from config.yaml. After the merge that path is in-repo, and eventually the F-Droid indexer becomes the publisher. Scope the new flow: build APK -> place in repo -> regenerate/sign index -> serve, including BAM_STORE_PUBLISH / BAM_STORE_CHANGELOG env knobs, aapt2 metadata extraction in tools/storelib.py, and whether publish becomes a thin wrapper over the fdroid container."
+status = "active"
+level = "scope"
+category = "feature"
+urgency = "normal"
+order = 70
+created = 2026-08-05
+tags = ["publish", "build"]
+
+[[task]]
+id = "scope-config-yaml-and-serving-changes-for-the-merged-repo"
+title = "Scope config.yaml and serving changes for the merged repo"
+description = "config.yaml currently has directories.bam-store pointing at the external checkout. Scope the new keys (repo path, serve host/port, signing key location), how the storage layout section grows to cover the APK payload on the big disk, and the Caddy serving story for apps.bam:80 over the tailnet including repo/Caddyfile.example. Keep config.yaml git-ignored and update config.example.yaml."
+status = "active"
+level = "scope"
+category = "chore"
+urgency = "normal"
+order = 80
+created = 2026-08-05
+tags = ["config", "serving"]
+
+[[task]]
+id = "scope-the-merged-documentation-and-skill-updates"
+title = "Scope the merged documentation and skill updates"
+description = "The two repos each have CLAUDE.md and README.md with their own doc maps. Scope folding the store docs into this repo's hub-and-spoke map without duplication: what the merged CLAUDE.md owns, what README.md owns, whether the store gets its own spoke doc, and updating the android-dev skill (publishing section, adb worlds, new fdroid container commands). Also fold the store's repository-contract section into whichever doc owns it."
+status = "active"
+level = "scope"
+category = "docs"
+urgency = "normal"
+order = 90
+created = 2026-08-05
+tags = ["docs", "skill"]
