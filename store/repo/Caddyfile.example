@@ -28,3 +28,16 @@
 # No bearer token is set — access is limited to the tailnet by Tailscale ACLs. If
 # you later want per-app gating, add a matcher that checks
 # `Authorization: Bearer <token>` and have the client send the same token.
+
+# ---------------------------------------------------------------------------
+# The F-Droid-style repo (same box, its own hostname) — see README.md →
+# "Serving the repo". Added through the same caddyedit Record API; its root
+# must also be bind-mounted into /data/caddy-docker/docker-compose.yml.
+#
+#     fdroid.bam:80 {
+#         root * /data/storage/fdroid      # directories.fdroid-repo
+#         file_server browse
+#     }
+#
+# Clients add http://fdroid.bam/repo — that string is also `fdroid.url` in
+# config.yaml and is baked into the signed index, so the two must match.

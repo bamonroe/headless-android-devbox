@@ -163,6 +163,28 @@ it after changing the `fdroid:` section of `config.yaml`. `scripts/fdroid-sync-a
 is the one-way store → F-Droid copy (safe to re-run, and it never publishes
 `*.test-*.apk` androidTest harnesses).
 
+### Serving the repo — `http://fdroid.bam/repo`
+
+Caddy serves the repo directory straight off the big disk, so nothing has to be
+copied anywhere after `scripts/fdroid-publish.sh`:
+
+```
+fdroid.bam:80 {
+    root * /data/storage/fdroid      # directories.fdroid-repo
+    file_server browse
+}
+```
+
+Add it in an F-Droid client as **`http://fdroid.bam/repo`** (this is the same
+value as `fdroid.url` in `config.yaml`, which is baked into the signed index —
+change one and re-run `scripts/fdroid-config.sh` + `scripts/fdroid.sh update -c`).
+
+Plain HTTP is deliberate: the box is only reachable over Tailscale, which already
+encrypts and authenticates, and the F-Droid index is signed independently of the
+transport. As with `apps.bam`, the site is added through the `/data/caddyedit`
+API rather than by hand, and the root must also be bind-mounted into the
+`/data/caddy-docker` Caddy container or the site 404s.
+
 ### The repo signing key (one time, then back it up)
 
 The F-Droid index is signed, so the repo needs its own key before `fdroid init`:
