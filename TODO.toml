@@ -34,8 +34,8 @@ tags = ["merge", "bam-store", "fdroid", "epic"]
 
 [[task]]
 id = "serve-the-f-droid-repo-over-https-via-caddy"
-title = "Serve the F-Droid repo over HTTPS via Caddy"
-description = "Expose the generated F-Droid repo (repo/ with index-v1.json, index-v2.json, and the APKs) at a stable URL so the F-Droid client can add it as a repository. Use the /data/caddyedit API to edit the Caddyfile without root and bind-mount the new root into the caddy container (see the editing-the-caddyfile-without-root memory). Update store/repo/Caddyfile.example and README.md with the resulting config, and verify by adding the repo in an F-Droid client."
+title = "Serve the F-Droid repo over HTTP via Caddy"
+description = "Expose the generated F-Droid repo (repo/ with index-v1.json, index-v2.json, and the APKs) at a stable URL so the F-Droid client can add it as a repository. Serve it over plain HTTP at http://apps.bam/ — the network is an internal Tailscale one, so no TLS and no public cert are needed; the F-Droid index is signed independently of the transport. Use the /data/caddyedit API to edit the Caddyfile without root and bind-mount the new root into the caddy container (see the editing-the-caddyfile-without-root memory). Update store/repo/Caddyfile.example and README.md with the resulting config, and verify by adding the repo in an F-Droid client."
 status = "active"
 level = "task"
 category = "feature"
