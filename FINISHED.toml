@@ -17,6 +17,16 @@ finish_work = "Tasks arrive here via `scripts/todo.sh done <id>`; newest first, 
 growth = "This file only grows; nothing is removed from it."
 
 [[task]]
+id = "verify-bam-store-auto-publish-end-to-end"
+title = "Verify BAM Store auto-publish end to end"
+description = "Run ./build.sh against a real project and confirm the new APK lands in the store repo with correct metadata and changelog sidecar, including the up-to-date-build fallback path."
+status = "finished"
+category = "chore"
+created = 2026-08-05
+completed = 2026-08-05
+tags = []
+
+[[task]]
 id = "keep-the-327m-apk-payload-on-the-big-disk-out-of-the-repo"
 title = "Keep the 327M APK payload on the big disk, out of the repo"
 description = "store/repo/apks is 327M of built APKs and must never enter git nor sit on the system disk. Decide and implement placement: keep the payload under directories.storage from config.yaml and symlink store/repo/apks to it, or make the apks dir configurable in tools/publish and the Caddy serving root. Update config.example.yaml and the serving config accordingly."
