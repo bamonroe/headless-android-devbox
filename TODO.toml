@@ -103,30 +103,6 @@ created = 2026-08-05
 tags = ["docs", "skill"]
 
 [[task]]
-id = "reconcile-gitignore-for-the-merged-store-subtree"
-title = "Reconcile .gitignore for the merged store subtree"
-description = "Fold the store's ignore rules into /data/android/.gitignore under a store/ prefix: store/repo/apks/*.apk, store/repo/apks/*.json, store/repo/icons/*, store/repo/index.json, store/client build dirs (.gradle/, .gradle-cache/, build/, app/build/, local.properties, .kotlin/). This repo already ignores *.apk and __pycache__/ globally, so don't duplicate those. Verify with 'git status --short' that the 327M payload stays untracked after the import."
-status = "active"
-level = "task"
-category = "chore"
-urgency = "high"
-order = 53
-created = 2026-08-05
-tags = []
-
-[[task]]
-id = "keep-the-327m-apk-payload-on-the-big-disk-out-of-the-repo"
-title = "Keep the 327M APK payload on the big disk, out of the repo"
-description = "store/repo/apks is 327M of built APKs and must never enter git nor sit on the system disk. Decide and implement placement: keep the payload under directories.storage from config.yaml and symlink store/repo/apks to it, or make the apks dir configurable in tools/publish and the Caddy serving root. Update config.example.yaml and the serving config accordingly."
-status = "active"
-level = "task"
-category = "feature"
-urgency = "high"
-order = 54
-created = 2026-08-05
-tags = []
-
-[[task]]
 id = "retire-the-old-data-bam-store-checkout"
 title = "Retire the old /data/bam-store checkout"
 description = "Once store/ is imported and verified building, publishing and serving from /data/android, retire /data/bam-store: confirm nothing still references the old path (config.yaml directories.bam-store, build.sh, skills, Caddy units), repoint them at the merged location, then rename the old checkout to /data/bam-store.retired rather than deleting. Delete only after one clean publish cycle from the new home."

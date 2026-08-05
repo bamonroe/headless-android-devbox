@@ -17,6 +17,28 @@ finish_work = "Tasks arrive here via `scripts/todo.sh done <id>`; newest first, 
 growth = "This file only grows; nothing is removed from it."
 
 [[task]]
+id = "keep-the-327m-apk-payload-on-the-big-disk-out-of-the-repo"
+title = "Keep the 327M APK payload on the big disk, out of the repo"
+description = "store/repo/apks is 327M of built APKs and must never enter git nor sit on the system disk. Decide and implement placement: keep the payload under directories.storage from config.yaml and symlink store/repo/apks to it, or make the apks dir configurable in tools/publish and the Caddy serving root. Update config.example.yaml and the serving config accordingly."
+status = "finished"
+level = "task"
+category = "feature"
+created = 2026-08-05
+completed = 2026-08-05
+tags = []
+
+[[task]]
+id = "reconcile-gitignore-for-the-merged-store-subtree"
+title = "Reconcile .gitignore for the merged store subtree"
+description = "Fold the store's ignore rules into /data/android/.gitignore under a store/ prefix: store/repo/apks/*.apk, store/repo/apks/*.json, store/repo/icons/*, store/repo/index.json, store/client build dirs (.gradle/, .gradle-cache/, build/, app/build/, local.properties, .kotlin/). This repo already ignores *.apk and __pycache__/ globally, so don't duplicate those. Verify with 'git status --short' that the 327M payload stays untracked after the import."
+status = "finished"
+level = "task"
+category = "chore"
+created = 2026-08-05
+completed = 2026-08-05
+tags = []
+
+[[task]]
 id = "import-bam-store-into-data-android-store-preserving-history"
 title = "Import BAM Store into /data/android/store/ preserving history"
 description = "Decision: the store lands at top-level store/ inside this repo (store/repo, store/tools, store/client), and git history IS preserved -- the store has only 4 commits, so 'git subtree add --prefix=store <local remote> master' (or fetch + read-tree with --allow-unrelated-histories) is cheap and keeps provenance. Do the import in its own commit, then drop the temporary remote."
