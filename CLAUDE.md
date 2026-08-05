@@ -139,10 +139,9 @@ cd /data/android
   restore the data; after that, `adb install -r` should work normally.
 - After a successful APK-producing build, `build.sh` publishes each new APK into
   the in-repo BAM Store at `store/` (override with `directories.bam-store` in
-  `config.yaml`). Set
-  `BAM_STORE_PUBLISH=0` for scratch builds that should not update the store, and
-  set `BAM_STORE_CHANGELOG="..."` to control the changelog sidecar written by
-  the store's `tools/publish`.
+  `config.yaml`). The `BAM_STORE_*` / `BUILDER_IMAGE` env knobs that steer this
+  are documented in one place — `README.md` → "Environment knobs (build +
+  publish)". Don't restate them elsewhere.
 - Add a new app's SDK level to `Dockerfile.builder` (a `platforms;android-NN` +
   `build-tools;NN.x` line) and rebuild the image when its `compileSdk` isn't 34 or 35.
 

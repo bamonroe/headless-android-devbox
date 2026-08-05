@@ -54,8 +54,7 @@ stable debug keystore for repeat `adb install -r` upgrades.
 After a successful APK-producing build, `build.sh` publishes the new APK(s) into
 the in-repo BAM Store at `store/` (override with `config.yaml`
 `directories.bam-store`), making them available
-through the private app repo. Set `BAM_STORE_PUBLISH=0` for a local build only, or
-set `BAM_STORE_CHANGELOG="..."` to control the store changelog. See CLAUDE.md.
+through the private app repo.
 
 The store itself now lives in this repo under `store/`. Its APK payload does not:
 `config.yaml` `directories.bam-store-apks` points the binaries at the big disk
@@ -63,9 +62,22 @@ The store itself now lives in this repo under `store/`. Its APK payload does not
 off the system disk and out of git while `store/repo/` keeps the small, committed
 parts. Serving maps `/apks/` at the payload dir — see `store/repo/Caddyfile.example`.
 
-The pre-merge checkout at `/data/bam-store` is retired (renamed
-`/data/bam-store.retired`); `http://apps.bam/` now serves straight out of
-`store/repo`. Caddy runs as the `/data/caddy-docker` container, so its
+### Environment knobs (build + publish)
+
+This table is the authoritative list; `build.sh`'s header points here.
+
+| Variable | Read by | Default | What it does |
+|---|---|---|---|
+| `BAM_STORE_PUBLISH` | `build.sh` | `1` | `0` builds only — no store publish (scratch builds). |
+| `BAM_STORE_CHANGELOG` | `build.sh` | `Built by /data/android/build.sh` | Changelog text for the sidecar `tools/publish` writes. |
+| `BAM_STORE_APKS` | `tools/publish`, `tools/reindex` | `directories.bam-store-apks` from `config.yaml`, else `store/repo/apks` | Where APK **binaries** land (the big disk). `build.sh` exports it from `config.yaml`. |
+| `BAM_STORE_REPO` | store tools | `store/repo` | The store repo dir holding `index.json`, icons, changelog sidecars. |
+| `BAM_STORE_AAPT2` | store tools | unset | Force a specific `aapt2` binary instead of running it in the builder container. |
+| `BAM_STORE_BUILDER_IMAGE` | store tools | `android-builder:local` | Image used to run `aapt2 dump badging`. Falls back to `BUILDER_IMAGE`. |
+| `BUILDER_IMAGE` | `build.sh`, store tools | `android-builder:local` | The build container image. |
+
+The pre-merge checkout at `/data/bam-store` is gone; `http://apps.bam/` now
+serves straight out of `store/repo`. Caddy runs as the `/data/caddy-docker` container, so its
 `apps.bam` root is bind-mounted there, and the Caddyfile itself is edited
 through the `/data/caddyedit` API rather than by hand.
 

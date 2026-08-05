@@ -64,8 +64,9 @@ edit the sidecar and re-run `tools/reindex`.
 Run from the repo root. The publish tools read APK metadata with `aapt2` from the
 `android-builder:local` container (`tools/aapt2.py`) — no host SDK required. They
 fall back to a host `aapt2` (under `ANDROID_HOME`/build-tools, or on `PATH`) only
-if one exists; `BAM_STORE_AAPT2` forces a specific binary and
-`BAM_STORE_BUILDER_IMAGE` overrides the image.
+if one exists. The env knobs (`BAM_STORE_AAPT2`, `BAM_STORE_BUILDER_IMAGE`, and
+the rest) are listed in `/data/android/README.md` → "Environment knobs (build +
+publish)".
 
 ```bash
 # Publish an APK into the store (extracts metadata, copies APK, rebuilds index)

@@ -13,7 +13,9 @@
 #
 # Successful APK-producing builds are published into the in-repo BAM Store at
 # `store/` (override with `directories.bam-store` in config.yaml). Set
-# BAM_STORE_PUBLISH=0 to build only.
+# BAM_STORE_PUBLISH=0 to build only, BAM_STORE_CHANGELOG="..." for the changelog.
+# The full list of build/publish env knobs lives in README.md
+# ("Environment knobs (build + publish)") — that table is authoritative.
 #
 # The mount contract (see Dockerfile.builder):
 #   <project-parent>         -> /workspace     (source in, APK out)
