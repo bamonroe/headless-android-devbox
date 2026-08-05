@@ -33,18 +33,6 @@ created = 2026-08-05
 tags = ["merge", "bam-store", "fdroid", "epic"]
 
 [[task]]
-id = "serve-the-f-droid-repo-over-https-via-caddy"
-title = "Serve the F-Droid repo over HTTP via Caddy"
-description = "Expose the generated F-Droid repo (repo/ with index-v1.json, index-v2.json, and the APKs) at a stable URL so the F-Droid client can add it as a repository. Serve it over plain HTTP at http://apps.bam/ — the network is an internal Tailscale one, so no TLS and no public cert are needed; the F-Droid index is signed independently of the transport. Use the /data/caddyedit API to edit the Caddyfile without root and bind-mount the new root into the caddy container (see the editing-the-caddyfile-without-root memory). Update store/repo/Caddyfile.example and README.md with the resulting config, and verify by adding the repo in an F-Droid client."
-status = "active"
-level = "task"
-category = "feature"
-urgency = "normal"
-order = 120
-created = 2026-08-05
-tags = []
-
-[[task]]
 id = "decide-the-fate-of-the-com-bam-store-client-under-f-droid"
 title = "Decide the fate of the com.bam.store client under F-Droid"
 description = "Investigate store/client (com.bam.store) to determine what it costs to point it at the signed F-Droid index-v2.json instead of the custom index.json, and weigh that against retiring it and using the standard F-Droid client. Look at how the client parses the index, handles installs, and whether it relies on fields F-Droid doesn't provide. Produce concrete tasks for whichever path is chosen; if the client is retired, one of them is removing it from this repo and unpublishing it from the store."
