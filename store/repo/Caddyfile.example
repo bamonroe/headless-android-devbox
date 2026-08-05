@@ -1,0 +1,18 @@
+# Live Caddy site for serving the BAM Store repository over the tailnet.
+#
+# This is managed through the `caddyedit` Record API (see the `caddy` skill), not
+# hand-edited — the block below documents what that record installs into
+# /etc/caddy/Caddyfile:
+#
+#     apps.bam:80 {
+#         root * /data/bam-store/repo
+#         file_server
+#     }
+#
+# Plain HTTP is intentional: everything is reached over Tailscale, which already
+# encrypts and authenticates the connection, so TLS would just re-wrap an
+# encrypted tunnel. The client's default base URL is http://apps.bam/.
+#
+# No bearer token is set — access is limited to the tailnet by Tailscale ACLs. If
+# you later want per-app gating, add a matcher that checks
+# `Authorization: Bearer <token>` and have the client send the same token.
