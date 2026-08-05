@@ -73,7 +73,7 @@ description = "Investigate turning the static index.json store into an F-Droid-s
 status = "active"
 level = "scope"
 category = "feature"
-urgency = "high"
+urgency = "normal"
 order = 60
 created = 2026-08-05
 tags = ["fdroid", "container"]
@@ -86,7 +86,7 @@ status = "active"
 level = "scope"
 category = "feature"
 urgency = "normal"
-order = 70
+order = 80
 created = 2026-08-05
 tags = ["publish", "build"]
 
@@ -98,7 +98,7 @@ status = "active"
 level = "scope"
 category = "chore"
 urgency = "normal"
-order = 80
+order = 70
 created = 2026-08-05
 tags = ["config", "serving"]
 
