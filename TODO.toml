@@ -103,18 +103,6 @@ created = 2026-08-05
 tags = ["docs", "skill"]
 
 [[task]]
-id = "import-bam-store-into-data-android-store-preserving-history"
-title = "Import BAM Store into /data/android/store/ preserving history"
-description = "Decision: the store lands at top-level store/ inside this repo (store/repo, store/tools, store/client), and git history IS preserved -- the store has only 4 commits, so 'git subtree add --prefix=store <local remote> master' (or fetch + read-tree with --allow-unrelated-histories) is cheap and keeps provenance. Do the import in its own commit, then drop the temporary remote."
-status = "active"
-level = "task"
-category = "feature"
-urgency = "high"
-order = 52
-created = 2026-08-05
-tags = []
-
-[[task]]
 id = "reconcile-gitignore-for-the-merged-store-subtree"
 title = "Reconcile .gitignore for the merged store subtree"
 description = "Fold the store's ignore rules into /data/android/.gitignore under a store/ prefix: store/repo/apks/*.apk, store/repo/apks/*.json, store/repo/icons/*, store/repo/index.json, store/client build dirs (.gradle/, .gradle-cache/, build/, app/build/, local.properties, .kotlin/). This repo already ignores *.apk and __pycache__/ globally, so don't duplicate those. Verify with 'git status --short' that the 327M payload stays untracked after the import."
