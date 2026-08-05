@@ -1,22 +1,30 @@
-# CLAUDE.md
+# store/ — the BAM Store spoke
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+The **store spoke** of the docs map in `/data/android/CLAUDE.md`. That root file is the
+hub: conventions, the container-first style guide, the two adb worlds, `build.sh` and
+its automatic publish step all live there, and `README.md` there owns the user-facing
+commands and env knobs. This file owns only what is specific to the store: the
+`repo/index.json` contract, what's committed versus generated, the `com.bam.store`
+client's install flow, and how the repo is served.
 
 ## What this is
 
-A private, self-hosted Android app store — a personal F-Droid. It distributes the
-apps *the owner builds* to their own Pixel devices. Two independent pieces:
+A private, self-hosted Android app store — a personal F-Droid — distributing the apps
+built on this box to the owner's own devices. Two independent pieces:
 
 - **`client/`** — a native Kotlin + Jetpack Compose Android app (`com.bam.store`)
   that fetches a catalog over HTTP(S), downloads APKs, and installs them via the
   platform `PackageInstaller`.
 - **`repo/`** + **`tools/`** — a *static* repository (a directory of APKs + a
   generated `index.json`) and a Python CLI that publishes into it. No server code,
-  no database; the repo is meant to be served as static files by Caddy.
+  no database; the repo is served as static files by Caddy.
 
 The client talks to the repo over plain HTTP(S): `GET index.json`, then
-`GET apks/<file>`. That contract (see below) is the only coupling between the two
+`GET apks/<file>`. That contract (below) is the only coupling between the two
 halves — either can be rebuilt independently as long as the JSON shape holds.
+
+The store is also mirrored into an F-Droid-format repo; that toolbox and its
+scripts are owned by the root `CLAUDE.md` → "The F-Droid repo container".
 
 ## Repository contract (`repo/index.json`)
 
@@ -59,55 +67,33 @@ reads back so changelog text survives an index rebuild even though the binaries
 don't live in git. So: to preserve a changelog, keep its sidecar; to change one,
 edit the sidecar and re-run `tools/reindex`.
 
-## Common commands
+## The tools (`tools/publish`, `tools/reindex`)
 
-Run from the repo root. The publish tools read APK metadata with `aapt2` from the
-`android-builder:local` container (`tools/aapt2.py`) — no host SDK required. They
-fall back to a host `aapt2` (under `ANDROID_HOME`/build-tools, or on `PATH`) only
-if one exists. The env knobs (`BAM_STORE_AAPT2`, `BAM_STORE_BUILDER_IMAGE`, and
-the rest) are listed in `/data/android/README.md` → "Environment knobs (build +
-publish)".
+`/data/android/build.sh` runs the publisher automatically after every successful
+build, so publishing by hand is the exception — reach for these when adopting an
+APK built elsewhere or repairing the index:
 
 ```bash
-# Publish an APK into the store (extracts metadata, copies APK, rebuilds index)
-tools/publish path/to/app.apk --changelog "What changed"
-
-# Rebuild repo/index.json from whatever APKs are in repo/apks/ (after manual edits)
-tools/reindex
-
-# Build the client
-cd client && ./gradlew :app:assembleDebug          # debug APK
-cd client && ./gradlew :app:assembleRelease         # release APK
-cd client && ./gradlew :app:installDebug            # build + adb install to current device
-
-# There are no unit tests yet. `./gradlew test` is the hook when they exist.
+tools/publish path/to/app.apk --changelog "What changed"   # extract, copy, reindex
+tools/reindex                                              # rebuild index.json from repo/apks/
 ```
 
-Client APK output: `client/app/build/outputs/apk/debug/app-debug.apk`.
+They read APK metadata with `aapt2` inside the `android-builder:local` container
+(`tools/aapt2.py`) — no host SDK required — falling back to a host `aapt2` only if
+one exists. Env knobs (`BAM_STORE_AAPT2`, `BAM_STORE_BUILDER_IMAGE`, and the rest)
+are listed once in `/data/android/README.md` → "Environment knobs (build +
+publish)". One parsing gotcha worth keeping: the badging field is
+`minSdkVersion:'…'` with a capital S, so a `sdkVersion` regex silently matches
+nothing.
 
-## Toolchain (this box)
+## Building and installing the client
 
-- Android SDK: `/home/bam/Android/Sdk` (build-tools 35.0.0, platform android-35).
-  `client/local.properties` pins `sdk.dir` and is **not** committed — regenerate on
-  a new machine.
-- Gradle 8.10.2 (wrapper), AGP 8.7.2, Kotlin 2.0.21, JDK 17 target.
-- The `publish`/`reindex` tools parse `aapt2 dump badging`, run in the builder
-  container by default. Note the field is `minSdkVersion:'…'` (capital S) —
-  a `sdkVersion` regex silently matches nothing.
-
-## Installing / running on a device
-
-Two **isolated adb worlds** live on this box (see the `android-dev` skill for the
-full story): the Dockerized emulator under `/data/android`, and the physical
-Pixel 8a. `adb` targets one or the other depending on which is connected — always
-confirm with `adb devices` before an install. Use the `android-dev` skill to
-build+install+inspect rather than driving adb by hand.
-
-For `adb install -r` to upgrade the client in place across rebuilds, the debug
-signature must be stable. Point `BAM_STORE_DEBUG_KEYSTORE` at a fixed debug
-keystore before building (see `client/app/build.gradle.kts`); otherwise
-containerized builds mint a random debug key each time and reinstalls fail with a
-signature mismatch.
+Build `client/` like any other app here — through the disposable build container
+(`/data/android/build.sh client`), which also publishes the resulting APK into this
+store. Installing and driving it on the emulator or a physical device is the
+`android-dev` skill's job; don't hand-drive adb. Both are covered by the root
+`CLAUDE.md`, which also explains why the debug keystore is pinned per project so
+`adb install -r` keeps working across rebuilds.
 
 ## The install flow (the part that actually matters)
 
