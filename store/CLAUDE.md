@@ -135,7 +135,7 @@ by a Caddy static-file record:
 
 ```
 apps.bam:80 {
-	root * /data/bam-store/repo
+	root * /data/android/store/repo
 	file_server
 }
 ```
