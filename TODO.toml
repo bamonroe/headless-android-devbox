@@ -83,8 +83,8 @@ tags = ["docs", "skill"]
 [[task]]
 id = "retire-the-old-data-bam-store-checkout"
 title = "Retire the old /data/bam-store checkout"
-description = "Retire /data/bam-store. Done so far: the 327M APK payload now lives at /data/android/store/repo/apks (hardlinked back into the old repo dir so serving keeps working), config.yaml/build.sh/skills already point at the merged store, and no live config outside Caddy references the old path. REMAINING (needs root): change /etc/caddy/Caddyfile 'apps.bam:80' root from /data/bam-store/repo to /data/android/store/repo, 'systemctl reload caddy', verify http://apps.bam/index.json and an .apk 200, then remove the hardlink copies and rename the checkout to /data/bam-store.retired. Delete only after one clean publish cycle from the new home."
-status = "in-progress"
+description = "Retire /data/bam-store. Done: the 327M APK payload lives at /data/android/store/repo (hardlinked back into the old repo dir so serving keeps working), config.yaml/build.sh/skills point at the merged store, and no live config outside Caddy references the old path. The remaining root-only steps are scripted in scripts/retire-bam-store.sh: it backs up /etc/caddy/Caddyfile, repoints the apps.bam root from /data/bam-store/repo to /data/android/store/repo, validates + reloads caddy, checks index.json and an .apk return 200, then renames the checkout to /data/bam-store.retired. BLOCKED on someone running 'sudo /data/android/scripts/retire-bam-store.sh' (no passwordless sudo here). Delete the .retired dir after one clean publish cycle from the new home."
+status = "blocked"
 level = "task"
 category = "chore"
 urgency = "normal"
