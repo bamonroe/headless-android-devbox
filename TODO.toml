@@ -141,18 +141,6 @@ created = 2026-08-05
 tags = []
 
 [[task]]
-id = "make-aapt2-metadata-extraction-container-based"
-title = "Make aapt2 metadata extraction container-based"
-description = "storelib.find_aapt2() globs SDK_DIR/build-tools on the host, so publishing depends on a host Android SDK that CLAUDE.md says should not exist. Run aapt2 dump badging inside the android-builder:local image (which already has build-tools) and fall back to a host aapt2 only if present."
-status = "active"
-level = "task"
-category = "refactor"
-urgency = "normal"
-order = 20
-created = 2026-08-05
-tags = []
-
-[[task]]
 id = "make-publish-a-thin-wrapper-over-both-indexers"
 title = "Make publish a thin wrapper over both indexers"
 description = "After the fdroid container lands, tools/publish should place the APK once and then regenerate both outputs: the existing repo/index.json (for the com.bam.store client) and the F-Droid signed index. Decide ordering/failure behaviour when the fdroid container is unavailable, and keep reindex consistent with it."

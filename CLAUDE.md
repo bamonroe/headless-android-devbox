@@ -184,7 +184,8 @@ Manual publishing is still available for APKs built outside this pipeline:
 ```
 
 This copies the APK into `repo/apks/<pkg>-<versionCode>.apk`, extracts metadata via
-`aapt2`, writes an optional changelog sidecar, and rebuilds `repo/index.json`. Bump
+`aapt2` (run inside the `android-builder:local` container, so no host SDK is
+needed), writes an optional changelog sidecar, and rebuilds `repo/index.json`. Bump
 `versionCode` in the app's `build.gradle` before publishing an update, or the store
 keeps only the highest existing code. See the store repo's own docs for the contract
 and serving details.

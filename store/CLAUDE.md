@@ -61,8 +61,11 @@ edit the sidecar and re-run `tools/reindex`.
 
 ## Common commands
 
-Run from the repo root. The publish tools need the Android SDK on
-`ANDROID_HOME` (defaults to `~/Android/Sdk`) for `aapt2`.
+Run from the repo root. The publish tools read APK metadata with `aapt2` from the
+`android-builder:local` container (`tools/aapt2.py`) — no host SDK required. They
+fall back to a host `aapt2` (under `ANDROID_HOME`/build-tools, or on `PATH`) only
+if one exists; `BAM_STORE_AAPT2` forces a specific binary and
+`BAM_STORE_BUILDER_IMAGE` overrides the image.
 
 ```bash
 # Publish an APK into the store (extracts metadata, copies APK, rebuilds index)
@@ -87,8 +90,8 @@ Client APK output: `client/app/build/outputs/apk/debug/app-debug.apk`.
   `client/local.properties` pins `sdk.dir` and is **not** committed — regenerate on
   a new machine.
 - Gradle 8.10.2 (wrapper), AGP 8.7.2, Kotlin 2.0.21, JDK 17 target.
-- The `publish`/`reindex` tools call `aapt2` from the newest `build-tools/*` and
-  parse `aapt2 dump badging`. Note the field is `minSdkVersion:'…'` (capital S) —
+- The `publish`/`reindex` tools parse `aapt2 dump badging`, run in the builder
+  container by default. Note the field is `minSdkVersion:'…'` (capital S) —
   a `sdkVersion` regex silently matches nothing.
 
 ## Installing / running on a device

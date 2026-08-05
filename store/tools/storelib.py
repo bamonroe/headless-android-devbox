@@ -26,9 +26,10 @@ import hashlib
 import json
 import os
 import re
-import subprocess
 import zipfile
 from dataclasses import dataclass, asdict
+
+import aapt2
 
 REPO_DIR = os.environ.get(
     "BAM_STORE_REPO",
@@ -38,18 +39,6 @@ SIDECARS_DIR = os.path.join(REPO_DIR, "apks")
 APKS_DIR = os.environ.get("BAM_STORE_APKS") or SIDECARS_DIR
 ICONS_DIR = os.path.join(REPO_DIR, "icons")
 INDEX_PATH = os.path.join(REPO_DIR, "index.json")
-SDK_DIR = os.environ.get("ANDROID_HOME") or os.path.expanduser("~/Android/Sdk")
-
-
-def find_aapt2() -> str:
-    """Return the newest aapt2 from the SDK's build-tools, or error out."""
-    candidates = sorted(glob.glob(os.path.join(SDK_DIR, "build-tools", "*", "aapt2")))
-    if not candidates:
-        raise SystemExit(
-            f"aapt2 not found under {SDK_DIR}/build-tools. "
-            "Set ANDROID_HOME or install build-tools."
-        )
-    return candidates[-1]
 
 
 def sha256(path: str) -> str:
@@ -75,13 +64,7 @@ class AppMeta:
 
 
 def _badging(apk: str) -> dict:
-    out = subprocess.run(
-        [find_aapt2(), "dump", "badging", apk],
-        capture_output=True, text=True,
-    )
-    if out.returncode != 0:
-        raise SystemExit(f"aapt2 failed on {apk}:\n{out.stderr}")
-    text = out.stdout
+    text = aapt2.dump_badging(apk)
 
     pkg = re.search(r"package: name='([^']+)' versionCode='([^']*)' versionName='([^']*)'", text)
     if not pkg:
