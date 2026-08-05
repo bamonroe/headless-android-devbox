@@ -182,6 +182,10 @@ owns index generation and signing for the F-Droid-style APK repo.
   invoking uid so nothing comes back root-owned.
 - Repo identity (`url`, `name`, `description`, `keystore-alias`) lives in the
   `fdroid:` section of `config.yaml`. The keystore is **never** in git.
+- The signing key is created once by **`scripts/fdroid-keystore.sh`** (PKCS#12 +
+  a `<keystore>.pass` sidecar on the big disk, both 0600). It refuses to
+  overwrite an existing keystore — re-signing with a new key breaks every client
+  that added the repo. User-facing details: `README.md` → "The repo signing key".
 - It is also a compose service behind the `tools` profile, so a bare
   `docker compose up` never starts it.
 - Rebuild after editing the Dockerfile:

@@ -91,6 +91,7 @@ the builder image, so it reuses the same JDK + Android SDK (`aapt2`, `apksigner`
 docker build -f Dockerfile.builder -t android-builder:local .   # once, if missing
 docker build -f Dockerfile.fdroid  -t fdroid:local .
 
+scripts/fdroid-keystore.sh      # ONCE: create the repo signing key (see below)
 scripts/fdroid.sh init          # first-time repo setup
 scripts/fdroid.sh update -c     # rescan APKs, regenerate + sign the index
 scripts/fdroid.sh deploy        # push the repo to its serving location
@@ -107,9 +108,29 @@ with a plain `docker compose up`.
 
 | Variable | Read by | Default | What it does |
 |---|---|---|---|
-| `FDROID_IMAGE` | `scripts/fdroid.sh` | `fdroid:local` | The fdroidserver container image. |
+| `FDROID_IMAGE` | `scripts/fdroid.sh`, `scripts/fdroid-keystore.sh` | `fdroid:local` | The fdroidserver container image. |
 | `FDROID_REPO` | `scripts/fdroid.sh`, compose | `directories.fdroid-repo` from `config.yaml` | Repo dir mounted at `/repo`. |
-| `FDROID_KEYSTORE` | `scripts/fdroid.sh`, compose | `directories.fdroid-keystore` from `config.yaml` | Signing keystore mounted read-only at `/keystore`. |
+| `FDROID_KEYSTORE` | `scripts/fdroid.sh`, `scripts/fdroid-keystore.sh`, compose | `directories.fdroid-keystore` from `config.yaml` | Signing keystore mounted read-only at `/keystore`. |
+| `FDROID_KEY_ALIAS` | `scripts/fdroid-keystore.sh` | `fdroid.keystore-alias` from `config.yaml` | Key alias inside the keystore. |
+| `FDROID_KEY_DNAME` | `scripts/fdroid-keystore.sh` | `CN=<fdroid.name>, OU=fdroid` | X.500 name on the self-signed cert. |
+
+### The repo signing key (one time, then back it up)
+
+The F-Droid index is signed, so the repo needs its own key before `fdroid init`:
+
+```bash
+scripts/fdroid-keystore.sh          # create it — refuses to overwrite an existing one
+scripts/fdroid-keystore.sh --show   # path, alias, SHA-256 fingerprint
+```
+
+It generates a 4096-bit RSA key (valid ~27 years) into a PKCS#12 keystore at
+`directories.fdroid-keystore`, with a random 32-character password written beside it
+as `<keystore>.pass` (mode 0600). Both files live on the big disk, outside git, and
+`.gitignore` blocks keystores/passwords from ever landing in the repo.
+
+**Back up the keystore and its password file off this box.** If the key is lost the
+repo can only be re-signed with a new one, and every client that added it has to
+remove and re-add the repo.
 
 ## Install & test the app on the emulator
 

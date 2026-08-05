@@ -32,6 +32,17 @@ store/repo/index.json
 store/client/local.properties
 store/client/.kotlin/
 
+# Signing keys + anything fdroidserver writes with a password in it. The repo
+# signing keystore lives on the big disk (directories.fdroid-keystore), but if
+# one ever lands here it must never be committed.
+*.p12
+*.jks
+*.keystore
+*.pass
+keystore*
+config.py
+keypass*
+
 # Machine-specific config + private notes (source of truth stays on-box only)
 config.yaml
 NOTES.local.md

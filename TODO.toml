@@ -33,18 +33,6 @@ created = 2026-08-05
 tags = ["merge", "bam-store", "fdroid", "epic"]
 
 [[task]]
-id = "create-and-secure-the-f-droid-repo-signing-keystore"
-title = "Create and secure the F-Droid repo signing keystore"
-description = "Generate the repo signing keystore used by 'fdroid update' once, store it outside git (under directories.storage from config.yaml, e.g. <storage>/android/fdroid/keystore), and add a config.yaml key (directories.fdroid-keystore or similar) plus config.example.yaml documentation. Ensure .gitignore covers any keystore/config.py/keypass files that fdroidserver writes into the repo dir. Document the one-time setup in README.md."
-status = "active"
-level = "task"
-category = "chore"
-urgency = "normal"
-order = 70
-created = 2026-08-05
-tags = []
-
-[[task]]
 id = "lay-out-and-initialize-the-f-droid-repo-directory"
 title = "Lay out and initialize the F-Droid repo directory"
 description = "Decide the on-disk layout for the F-Droid repo under store/ (e.g. store/fdroid/{repo,metadata,unsigned}) versus the existing store/repo with index.json, run 'fdroid init' through the container, and populate repo/ from the existing store/repo/apks APKs. Decide what is committed vs git-ignored (APKs and generated index files are build artifacts). Result: a working repo whose index-v1.json/index-v2.json validate and are signed."
