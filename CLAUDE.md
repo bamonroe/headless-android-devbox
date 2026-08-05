@@ -197,6 +197,8 @@ and serving details.
 |---|---|---|
 | `<storage>/android/sdk` | cmdline-tools, platform-tools, emulator, system images | big disk |
 | `<storage>/android/avd` | AVD config + qcow2 disks | big disk |
+| `directories.bam-store-apks` | the store's APK binaries (hundreds of MB) | big disk |
+| `store/repo/` | `index.json`, icons, changelog sidecars — the small, committed parts | this repo |
 | Docker image | JDK + emulator libs only (small) | system disk |
 
 ## Knobs (`docker-compose.yml` `environment:`)

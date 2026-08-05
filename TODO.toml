@@ -45,18 +45,6 @@ created = 2026-08-05
 tags = ["publish", "build"]
 
 [[task]]
-id = "scope-config-yaml-and-serving-changes-for-the-merged-repo"
-title = "Scope config.yaml and serving changes for the merged repo"
-description = "config.yaml currently has directories.bam-store pointing at the external checkout. Scope the new keys (repo path, serve host/port, signing key location), how the storage layout section grows to cover the APK payload on the big disk, and the Caddy serving story for apps.bam:80 over the tailnet including repo/Caddyfile.example. Keep config.yaml git-ignored and update config.example.yaml."
-status = "active"
-level = "scope"
-category = "chore"
-urgency = "normal"
-order = 70
-created = 2026-08-05
-tags = ["config", "serving"]
-
-[[task]]
 id = "scope-the-merged-documentation-and-skill-updates"
 title = "Scope the merged documentation and skill updates"
 description = "The two repos each have CLAUDE.md and README.md with their own doc maps. Scope folding the store docs into this repo's hub-and-spoke map without duplication: what the merged CLAUDE.md owns, what README.md owns, whether the store gets its own spoke doc, and updating the android-dev skill (publishing section, adb worlds, new fdroid container commands). Also fold the store's repository-contract section into whichever doc owns it."
@@ -161,5 +149,17 @@ level = "scope"
 category = "feature"
 urgency = "normal"
 order = 170
+created = 2026-08-05
+tags = []
+
+[[task]]
+id = "add-f-droid-config-keys-to-config-yaml-and-the-template"
+title = "Add F-Droid config keys to config.yaml and the template"
+description = "The F-Droid repo work needs machine-specific paths that don't exist yet: directories.fdroid-repo (the fdroidserver repo dir on the big disk), directories.fdroid-keystore (the signing keystore, kept off git), and the public repo URL. Add them to config.yaml and config.example.yaml with comments, and note them in the CLAUDE.md storage layout table. Do this before the keystore/init tasks so they can read the paths from config.sh."
+status = "active"
+level = "task"
+category = "chore"
+urgency = "normal"
+order = 180
 created = 2026-08-05
 tags = []
