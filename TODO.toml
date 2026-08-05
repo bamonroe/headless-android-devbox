@@ -1,0 +1,43 @@
+# TODO — active task list for this project.
+#
+# Single source of truth for active work (see CLAUDE.md -> documentation map).
+# Edit through the todo skill so ids, ordering, and metadata stay consistent:
+#   scripts/todo.sh <command>      (see .claude/skills/todo/SKILL.md)
+# Hand-editing works too — it is plain TOML — but the skill keeps it tidy.
+
+schema_version = 1
+
+[meta]
+title = "TODO"
+kind = "todo"
+purpose = "The live task list and journal for this project — active work only."
+documentation_map = "CLAUDE.md"
+archive = "FINISHED.toml"
+
+[meta.rules]
+add_proposed_work = "Add proposed work as a new task rather than losing it."
+remove_dropped_items = "Remove dropped items with a one-line why."
+finish_work = "When a task is fully finished (built, tested, documented), run `scripts/todo.sh done <id>` to move it to FINISHED.toml."
+scope = "In bounds: the emulator scaffold, the disposable APK builder, the store-publish pipeline, and their docs. Out of bounds: the app projects themselves and the BAM Store repo — track their work in their own repos."
+
+[[task]]
+id = "verify-bam-store-auto-publish-end-to-end"
+title = "Verify BAM Store auto-publish end to end"
+description = "Run ./build.sh against a real project and confirm the new APK lands in the store repo with correct metadata and changelog sidecar, including the up-to-date-build fallback path."
+status = "active"
+category = "chore"
+urgency = "normal"
+order = 20
+created = 2026-08-05
+tags = []
+
+[[task]]
+id = "smoke-test-connected-test-sh-on-the-emulator"
+title = "Smoke-test connected-test.sh on the emulator"
+description = "Boot the emulator and run an androidTest suite through scripts/connected-test.sh to confirm the builder/emulator adb split is handled."
+status = "active"
+category = "chore"
+urgency = "normal"
+order = 30
+created = 2026-08-05
+tags = []

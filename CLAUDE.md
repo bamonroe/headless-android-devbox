@@ -29,8 +29,8 @@ instead. Read this table first, then follow only the spoke your task needs.
 | **Machine-specific values** (IPs, storage paths)  | `config.yaml` (git-ignored) |
 | **Per-app working notes**                         | `NOTES.local.md` (git-ignored) |
 
-`TODO.toml`/`FINISHED.toml` don't exist yet in this repo — create them through the `todo`
-skill the first time work needs tracking, rather than hand-writing them.
+Drive `TODO.toml`/`FINISHED.toml` through the `todo` skill (`./scripts/todo.sh <command>`,
+see `.claude/skills/todo/SKILL.md`) rather than hand-editing them.
 
 ## Machine config — `config.yaml` (source of truth)
 
