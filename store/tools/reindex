@@ -4,7 +4,8 @@
     tools/reindex
 
 Useful after manually adding, replacing, or deleting APK files. Keeps only the
-highest versionCode per package.
+highest versionCode per package. The F-Droid index is regenerated too, so the
+two stay consistent (see fdroidhook).
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import fdroidhook
 import storelib as S
 
 
@@ -21,6 +23,8 @@ def main() -> int:
     for a in sorted(apps, key=lambda a: a.label.lower()):
         print(f"  {a.label:24} v{a.versionName:10} (code {a.versionCode})")
     print(f"index: {S.INDEX_PATH} — {len(apps)} app(s)")
+
+    fdroidhook.update()
     return 0
 
 

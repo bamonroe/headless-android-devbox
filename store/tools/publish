@@ -4,7 +4,8 @@
     tools/publish path/to/app.apk [--changelog "What changed"]
 
 Copies the APK to repo/apks/<package>-<versionCode>.apk, extracts its icon,
-records an optional changelog sidecar, and regenerates index.json.
+records an optional changelog sidecar, and regenerates both indexes: the
+store's own index.json and the signed F-Droid index (see fdroidhook).
 """
 
 from __future__ import annotations
@@ -15,6 +16,7 @@ import shutil
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import fdroidhook
 import storelib as S
 
 
@@ -47,6 +49,8 @@ def main() -> int:
     print(f"  apk:   {published.apk}")
     print(f"  icon:  {published.icon or '(none)'}")
     print(f"  index: {S.INDEX_PATH} — {len(apps)} app(s)")
+
+    fdroidhook.update()
     return 0
 
 

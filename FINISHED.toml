@@ -17,6 +17,17 @@ finish_work = "Tasks arrive here via `scripts/todo.sh done <id>`; newest first, 
 growth = "This file only grows; nothing is removed from it."
 
 [[task]]
+id = "make-publish-a-thin-wrapper-over-both-indexers"
+title = "Make publish a thin wrapper over both indexers"
+description = "After the fdroid container lands, tools/publish should place the APK once and then regenerate both outputs: the existing repo/index.json (for the com.bam.store client) and the F-Droid signed index. Decide ordering/failure behaviour when the fdroid container is unavailable, and keep reindex consistent with it."
+status = "finished"
+level = "task"
+category = "feature"
+created = 2026-08-05
+completed = 2026-08-05
+tags = []
+
+[[task]]
 id = "run-f-droid-index-generation-alongside-the-existing-publisher"
 title = "Run F-Droid index generation alongside the existing publisher"
 description = "Extend the publish pipeline so a published APK lands in both the custom index.json store and the F-Droid repo during the transition: after tools/publish succeeds, copy the APK into the fdroid repo dir and run 'fdroid update' in the container. Keep BAM_STORE_PUBLISH=0 honoured and add a matching opt-out for the fdroid step. Both indexes stay in sync until the custom index.json is retired."

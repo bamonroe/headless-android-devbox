@@ -115,8 +115,11 @@ BAM_STORE_APKS="${BAM_STORE_APKS:-$("$SCRIPT_DIR/config.sh" get directories bam-
 export BAM_STORE_APKS
 
 echo ">> Publishing APK(s) to BAM Store: $STORE (payload: ${BAM_STORE_APKS:-in-repo})"
+# tools/publish updates both indexes on its own, but a multi-APK build would then
+# re-sign the F-Droid index once per APK. Suppress it in the loop and run the
+# second indexer once, after every APK is in place.
 for apk in "${APKS[@]}"; do
-  "$STORE/tools/publish" "$apk" --changelog "$BAM_STORE_CHANGELOG"
+  FDROID_PUBLISH=0 "$STORE/tools/publish" "$apk" --changelog "$BAM_STORE_CHANGELOG"
 done
 
 # Second index: mirror the freshly published APKs into the F-Droid repo so both

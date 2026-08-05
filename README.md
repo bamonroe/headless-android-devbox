@@ -140,7 +140,8 @@ with a plain `docker compose up`.
 | `BAM_STORE_APKS` | `scripts/fdroid-sync-apks.sh` | `directories.bam-store-apks` from `config.yaml` | Where the store's APK binaries are read from. |
 | `BAM_STORE` | `scripts/fdroid-metadata.sh` | `directories.bam-store` from `config.yaml`, else `store/` | The store dir whose `repo/index.json` metadata is generated from. |
 | `FDROID_AUTHOR` | `scripts/fdroid-metadata.sh` | `fdroid.author` from `config.yaml` | `AuthorName` filled in for apps that don't have one yet. |
-| `FDROID_PUBLISH` | `build.sh` | `1` | `0` publishes to the BAM Store only — no F-Droid repo update. |
+| `FDROID_PUBLISH` | `build.sh`, `tools/publish`, `tools/reindex` | `1` | `0` publishes to the BAM Store only — no F-Droid repo update. `build.sh` sets it for its per-APK publishes and runs the F-Droid step once at the end. |
+| `FDROID_PUBLISH_SCRIPT` | `tools/publish`, `tools/reindex` | `<android>/scripts/fdroid-publish.sh` | The second indexer they call; skipped with a warning if it isn't executable. |
 
 ### The repo layout, and what's committed
 
