@@ -41,3 +41,15 @@ urgency = "normal"
 order = 30
 created = 2026-08-05
 tags = []
+
+[[task]]
+id = "merge-bam-store-into-data-android-as-the-single-android-home"
+title = "Merge BAM Store into /data/android as the single Android home"
+description = "Merge the BAM Store project (/data/bam-store) into this repo so /data/android becomes everything Android: the APK repository, the build tools (build.sh + Dockerfile.builder), and the headless emulator. Beyond a straight merge, the APK repo should become an F-Droid-style repo, which means bringing in an F-Droid repo container (index generation/signing, fdroidserver, serving the repo) alongside the existing store publisher. Scope out the migration path (repo layout, history, config.yaml keys, publish pipeline, docs) as child scope/task items before implementing."
+status = "active"
+level = "epic"
+category = "feature"
+urgency = "normal"
+order = 40
+created = 2026-08-05
+tags = ["merge", "bam-store", "fdroid", "epic"]
