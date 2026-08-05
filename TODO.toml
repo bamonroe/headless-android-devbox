@@ -33,18 +33,6 @@ created = 2026-08-05
 tags = ["merge", "bam-store", "fdroid", "epic"]
 
 [[task]]
-id = "build-an-fdroidserver-container-image"
-title = "Build an fdroidserver container image"
-description = "Add Dockerfile.fdroid (tag fdroid:local) with fdroidserver + Android build-tools/aapt2 and a docker-compose service alongside the emulator, per this repo's Docker-first convention. It must be able to run 'fdroid init', 'fdroid update' and 'fdroid deploy' against a repo directory bind-mounted from the host, running as the invoking uid so generated files aren't root-owned. Add a thin scripts/fdroid.sh wrapper so nothing load-bearing lives in shell history."
-status = "active"
-level = "task"
-category = "feature"
-urgency = "normal"
-order = 60
-created = 2026-08-05
-tags = []
-
-[[task]]
 id = "create-and-secure-the-f-droid-repo-signing-keystore"
 title = "Create and secure the F-Droid repo signing keystore"
 description = "Generate the repo signing keystore used by 'fdroid update' once, store it outside git (under directories.storage from config.yaml, e.g. <storage>/android/fdroid/keystore), and add a config.yaml key (directories.fdroid-keystore or similar) plus config.example.yaml documentation. Ensure .gitignore covers any keystore/config.py/keypass files that fdroidserver writes into the repo dir. Document the one-time setup in README.md."

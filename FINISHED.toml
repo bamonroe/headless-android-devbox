@@ -17,6 +17,17 @@ finish_work = "Tasks arrive here via `scripts/todo.sh done <id>`; newest first, 
 growth = "This file only grows; nothing is removed from it."
 
 [[task]]
+id = "build-an-fdroidserver-container-image"
+title = "Build an fdroidserver container image"
+description = "Add Dockerfile.fdroid (tag fdroid:local) with fdroidserver + Android build-tools/aapt2 and a docker-compose service alongside the emulator, per this repo's Docker-first convention. It must be able to run 'fdroid init', 'fdroid update' and 'fdroid deploy' against a repo directory bind-mounted from the host, running as the invoking uid so generated files aren't root-owned. Add a thin scripts/fdroid.sh wrapper so nothing load-bearing lives in shell history."
+status = "finished"
+level = "task"
+category = "feature"
+created = 2026-08-05
+completed = 2026-08-05
+tags = []
+
+[[task]]
 id = "add-f-droid-config-keys-to-config-yaml-and-the-template"
 title = "Add F-Droid config keys to config.yaml and the template"
 description = "The F-Droid repo work needs machine-specific paths that don't exist yet: directories.fdroid-repo (the fdroidserver repo dir on the big disk), directories.fdroid-keystore (the signing keystore, kept off git), and the public repo URL. Add them to config.yaml and config.example.yaml with comments, and note them in the CLAUDE.md storage layout table. Do this before the keystore/init tasks so they can read the paths from config.sh."
