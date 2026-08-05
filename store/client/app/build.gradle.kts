@@ -14,6 +14,8 @@ android {
         targetSdk = 35
         versionCode = 3
         versionName = "0.1.2"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
@@ -68,4 +70,9 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     // Load remote app icons into Compose.
     implementation("io.coil-kt:coil-compose:2.7.0")
+
+    // Instrumented tests — run with the toolchain's scripts/connected-test.sh, not
+    // Gradle's connectedAndroidTest (the build container can't see the emulator).
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test:runner:1.6.2")
 }

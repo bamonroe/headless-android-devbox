@@ -103,6 +103,17 @@ component from the test APK's manifest (aapt), then installs and runs it through
 the world where they work. Exit status is the test result (non-zero if any test fails/errors
 or the runner can't start), so it's CI-usable. Booting the emulator first is handled for you.
 
+The store client (`store/client`) carries a small `androidTest` suite that exercises this
+path end to end — use it as the reference/smoke test:
+
+```sh
+scripts/connected-test.sh /data/android/store/client     # → OK (3 tests), RESULT: PASSED
+```
+
+A project needs `testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"` plus
+`androidTestImplementation` on `androidx.test.ext:junit` and `androidx.test:runner`, or the
+test APK ships without an `<instrumentation>` node and the script stops there.
+
 ## Physical devices (over host adb)
 
 Get the device IP from `config.yaml` (`./config.sh get devices <name>`), or run

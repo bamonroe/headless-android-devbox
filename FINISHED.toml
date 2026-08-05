@@ -17,6 +17,16 @@ finish_work = "Tasks arrive here via `scripts/todo.sh done <id>`; newest first, 
 growth = "This file only grows; nothing is removed from it."
 
 [[task]]
+id = "smoke-test-connected-test-sh-on-the-emulator"
+title = "Smoke-test connected-test.sh on the emulator"
+description = "Boot the emulator and run an androidTest suite through scripts/connected-test.sh to confirm the builder/emulator adb split is handled."
+status = "finished"
+category = "chore"
+created = 2026-08-05
+completed = 2026-08-05
+tags = []
+
+[[task]]
 id = "verify-bam-store-auto-publish-end-to-end"
 title = "Verify BAM Store auto-publish end to end"
 description = "Run ./build.sh against a real project and confirm the new APK lands in the store repo with correct metadata and changelog sidecar, including the up-to-date-build fallback path."
