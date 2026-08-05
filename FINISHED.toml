@@ -17,6 +17,17 @@ finish_work = "Tasks arrive here via `scripts/todo.sh done <id>`; newest first, 
 growth = "This file only grows; nothing is removed from it."
 
 [[task]]
+id = "commit-the-in-flight-bam-store-working-changes-before-the-merge"
+title = "Commit the in-flight BAM Store working changes before the merge"
+description = "In /data/bam-store there are uncommitted edits (.gitignore, client/app/build.gradle.kts, client MainActivity.kt) plus untracked repo/apks/*.json sidecars. Commit the source edits atomically so the history-preserving import brings a clean tree; leave the apk/json payload untracked. Also add repo/apks/*.json to the store .gitignore so the changelog sidecars are never committed."
+status = "finished"
+level = "task"
+category = "chore"
+created = 2026-08-05
+completed = 2026-08-05
+tags = []
+
+[[task]]
 id = "decide-the-merged-repo-layout-and-history-preservation-plan"
 title = "Decide the merged repo layout and history-preservation plan"
 description = "Design where /data/bam-store lands inside /data/android: proposed store/ (repo/, tools/, client/) vs top-level. Decide whether to preserve bam-store git history (git subtree/merge with --allow-unrelated-histories) or import as a squashed snapshot. Cover .gitignore reconciliation (repo/apks/*.apk, repo/icons/*, repo/index.json, client build dirs, __pycache__), the 327M untracked repo/apks payload which must stay out of git and probably stay on the big disk, and how the old /data/bam-store checkout is retired. Output concrete tasks."

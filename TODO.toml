@@ -103,18 +103,6 @@ created = 2026-08-05
 tags = ["docs", "skill"]
 
 [[task]]
-id = "commit-the-in-flight-bam-store-working-changes-before-the-merge"
-title = "Commit the in-flight BAM Store working changes before the merge"
-description = "In /data/bam-store there are uncommitted edits (.gitignore, client/app/build.gradle.kts, client MainActivity.kt) plus untracked repo/apks/*.json sidecars. Commit the source edits atomically so the history-preserving import brings a clean tree; leave the apk/json payload untracked. Also add repo/apks/*.json to the store .gitignore so the changelog sidecars are never committed."
-status = "active"
-level = "task"
-category = "chore"
-urgency = "high"
-order = 51
-created = 2026-08-05
-tags = []
-
-[[task]]
 id = "import-bam-store-into-data-android-store-preserving-history"
 title = "Import BAM Store into /data/android/store/ preserving history"
 description = "Decision: the store lands at top-level store/ inside this repo (store/repo, store/tools, store/client), and git history IS preserved -- the store has only 4 commits, so 'git subtree add --prefix=store <local remote> master' (or fetch + read-tree with --allow-unrelated-histories) is cheap and keeps provenance. Do the import in its own commit, then drop the temporary remote."
