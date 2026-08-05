@@ -15,5 +15,5 @@ client/.kotlin/
 
 __pycache__/
 
-# Publisher-written changelog sidecars — regenerated, not source.
-repo/apks/*.json
+# Changelog sidecars (repo/apks/*.json) are deliberately NOT ignored: they are
+# the one thing tools/reindex cannot rebuild from the APK binaries.

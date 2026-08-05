@@ -22,6 +22,16 @@ avd/
 *.apk
 *.aab
 
+# BAM Store payload + generated catalog (store/ subtree). The APK binaries live
+# on the big disk (directories.bam-store-apks); icons and index.json are
+# regenerable with store/tools/reindex. The changelog sidecars under
+# store/repo/apks/*.json ARE committed — they're the only thing that can't be
+# rebuilt from the binaries. (*.apk is already ignored globally above.)
+store/repo/icons/*
+store/repo/index.json
+store/client/local.properties
+store/client/.kotlin/
+
 # Machine-specific config + private notes (source of truth stays on-box only)
 config.yaml
 NOTES.local.md
