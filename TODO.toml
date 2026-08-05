@@ -33,18 +33,6 @@ created = 2026-08-05
 tags = ["merge", "bam-store", "fdroid", "epic"]
 
 [[task]]
-id = "scope-the-merged-documentation-and-skill-updates"
-title = "Scope the merged documentation and skill updates"
-description = "The two repos each have CLAUDE.md and README.md with their own doc maps. Scope folding the store docs into this repo's hub-and-spoke map without duplication: what the merged CLAUDE.md owns, what README.md owns, whether the store gets its own spoke doc, and updating the android-dev skill (publishing section, adb worlds, new fdroid container commands). Also fold the store's repository-contract section into whichever doc owns it."
-status = "active"
-level = "scope"
-category = "docs"
-urgency = "normal"
-order = 90
-created = 2026-08-05
-tags = ["docs", "skill"]
-
-[[task]]
 id = "delete-data-bam-store-retired-after-a-clean-publish-cycle"
 title = "Delete /data/bam-store.retired after a clean publish cycle"
 description = "The old checkout is renamed to /data/bam-store.retired and nothing references it (Caddy now serves /data/android/store/repo, bind-mounted into the caddy container). Run one publish through ./build.sh <project> from the merged home, confirm the new APK appears at http://apps.bam/index.json and downloads, then 'rm -rf /data/bam-store.retired' to reclaim ~327M of hardlinked payload."
@@ -197,5 +185,53 @@ level = "task"
 category = "docs"
 urgency = "normal"
 order = 220
+created = 2026-08-05
+tags = []
+
+[[task]]
+id = "add-the-store-spoke-to-the-claude-md-documentation-map"
+title = "Add the store spoke to the CLAUDE.md documentation map"
+description = "The hub-and-spoke table in CLAUDE.md has no row for the store. Add store/CLAUDE.md as the authoritative spoke for the APK repository (contract, committed-vs-generated, client, serving), and trim root CLAUDE.md's 'Publishing to the app store' section down to a pointer plus the build.sh integration facts it genuinely owns."
+status = "active"
+level = "task"
+category = "docs"
+urgency = "normal"
+order = 230
+created = 2026-08-05
+tags = []
+
+[[task]]
+id = "rewrite-store-claude-md-as-an-in-repo-spoke"
+title = "Rewrite store/CLAUDE.md as an in-repo spoke"
+description = "store/CLAUDE.md still reads as a standalone repo root: its own 'What this is', toolchain and device-install sections duplicate the root CLAUDE.md and the android-dev skill. Keep the repository contract, committed-vs-generated, and serving sections it uniquely owns; replace the duplicated toolchain/install/build prose with links to the owning docs."
+status = "active"
+level = "task"
+category = "docs"
+urgency = "normal"
+order = 240
+created = 2026-08-05
+tags = []
+
+[[task]]
+id = "fold-store-readme-md-into-the-root-readme"
+title = "Fold store/README.md into the root README"
+description = "README.md documents emulator, build, install and storage but never mentions the store; store/README.md separately covers layout, publishing, serving and building the client. Give the root README a publishing section covering the automatic build.sh publish and the manual tools/publish command, and reduce store/README.md to the store-local details or delete it."
+status = "active"
+level = "task"
+category = "docs"
+urgency = "normal"
+order = 250
+created = 2026-08-05
+tags = []
+
+[[task]]
+id = "update-the-android-dev-skill-for-the-merged-store"
+title = "Update the android-dev skill for the merged store"
+description = "The skill's publishing section resolves the store via config.sh get directories bam-store and points at 'that repo's own docs'. Point it at the in-repo /data/android/store instead, note that build.sh now publishes automatically, and leave a placeholder for the fdroid container commands once those tasks land."
+status = "active"
+level = "task"
+category = "docs"
+urgency = "normal"
+order = 260
 created = 2026-08-05
 tags = []
