@@ -33,18 +33,6 @@ created = 2026-08-05
 tags = ["merge", "bam-store", "fdroid", "epic"]
 
 [[task]]
-id = "scope-unifying-the-publish-pipeline-after-the-merge"
-title = "Scope unifying the publish pipeline after the merge"
-description = "build.sh currently shells out to an external BAM Store publisher at directories.bam-store from config.yaml. After the merge that path is in-repo, and eventually the F-Droid indexer becomes the publisher. Scope the new flow: build APK -> place in repo -> regenerate/sign index -> serve, including BAM_STORE_PUBLISH / BAM_STORE_CHANGELOG env knobs, aapt2 metadata extraction in tools/storelib.py, and whether publish becomes a thin wrapper over the fdroid container."
-status = "active"
-level = "scope"
-category = "feature"
-urgency = "normal"
-order = 80
-created = 2026-08-05
-tags = ["publish", "build"]
-
-[[task]]
 id = "scope-the-merged-documentation-and-skill-updates"
 title = "Scope the merged documentation and skill updates"
 description = "The two repos each have CLAUDE.md and README.md with their own doc maps. Scope folding the store docs into this repo's hub-and-spoke map without duplication: what the merged CLAUDE.md owns, what README.md owns, whether the store gets its own spoke doc, and updating the android-dev skill (publishing section, adb worlds, new fdroid container commands). Also fold the store's repository-contract section into whichever doc owns it."
@@ -161,5 +149,53 @@ level = "task"
 category = "chore"
 urgency = "normal"
 order = 180
+created = 2026-08-05
+tags = []
+
+[[task]]
+id = "point-build-sh-at-the-in-repo-store-publisher"
+title = "Point build.sh at the in-repo store publisher"
+description = "build.sh resolves the publisher via directories.bam-store in config.yaml, which now just points back at /data/android/store. Default the publisher path to $SCRIPT_DIR/store/tools/publish and treat the config key as an optional override (or drop it), so a fresh clone publishes with no config.yaml edit."
+status = "active"
+level = "task"
+category = "refactor"
+urgency = "normal"
+order = 190
+created = 2026-08-05
+tags = []
+
+[[task]]
+id = "make-aapt2-metadata-extraction-container-based"
+title = "Make aapt2 metadata extraction container-based"
+description = "storelib.find_aapt2() globs SDK_DIR/build-tools on the host, so publishing depends on a host Android SDK that CLAUDE.md says should not exist. Run aapt2 dump badging inside the android-builder:local image (which already has build-tools) and fall back to a host aapt2 only if present."
+status = "active"
+level = "task"
+category = "refactor"
+urgency = "normal"
+order = 200
+created = 2026-08-05
+tags = []
+
+[[task]]
+id = "make-publish-a-thin-wrapper-over-both-indexers"
+title = "Make publish a thin wrapper over both indexers"
+description = "After the fdroid container lands, tools/publish should place the APK once and then regenerate both outputs: the existing repo/index.json (for the com.bam.store client) and the F-Droid signed index. Decide ordering/failure behaviour when the fdroid container is unavailable, and keep reindex consistent with it."
+status = "active"
+level = "task"
+category = "feature"
+urgency = "normal"
+order = 210
+created = 2026-08-05
+tags = []
+
+[[task]]
+id = "settle-and-document-the-publish-env-knobs"
+title = "Settle and document the publish env knobs"
+description = "BAM_STORE_PUBLISH, BAM_STORE_CHANGELOG and BAM_STORE_APKS are read in build.sh and storelib.py. Now that the store is in-repo, confirm the names, give them one authoritative documented home (README plus build.sh header), and make sure BAM_STORE_APKS still routes binaries to directories.bam-store-apks on the big disk."
+status = "active"
+level = "task"
+category = "docs"
+urgency = "normal"
+order = 220
 created = 2026-08-05
 tags = []

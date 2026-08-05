@@ -17,6 +17,17 @@ finish_work = "Tasks arrive here via `scripts/todo.sh done <id>`; newest first, 
 growth = "This file only grows; nothing is removed from it."
 
 [[task]]
+id = "scope-unifying-the-publish-pipeline-after-the-merge"
+title = "Scope unifying the publish pipeline after the merge"
+description = "build.sh currently shells out to an external BAM Store publisher at directories.bam-store from config.yaml. After the merge that path is in-repo, and eventually the F-Droid indexer becomes the publisher. Scope the new flow: build APK -> place in repo -> regenerate/sign index -> serve, including BAM_STORE_PUBLISH / BAM_STORE_CHANGELOG env knobs, aapt2 metadata extraction in tools/storelib.py, and whether publish becomes a thin wrapper over the fdroid container."
+status = "finished"
+level = "scope"
+category = "feature"
+created = 2026-08-05
+completed = 2026-08-05
+tags = ["publish", "build"]
+
+[[task]]
 id = "scope-config-yaml-and-serving-changes-for-the-merged-repo"
 title = "Scope config.yaml and serving changes for the merged repo"
 description = "config.yaml currently has directories.bam-store pointing at the external checkout. Scope the new keys (repo path, serve host/port, signing key location), how the storage layout section grows to cover the APK payload on the big disk, and the Caddy serving story for apps.bam:80 over the tailnet including repo/Caddyfile.example. Keep config.yaml git-ignored and update config.example.yaml."
