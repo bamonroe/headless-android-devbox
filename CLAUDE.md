@@ -143,6 +143,14 @@ cd /data/android
   `config.yaml`). The `BAM_STORE_*` / `BUILDER_IMAGE` env knobs that steer this
   are documented in one place — `README.md` → "Environment knobs (build +
   publish)". Don't restate them elsewhere.
+- **Every app gets an automatic monotonic `versionCode`** — `build.sh` computes the
+  project's git commit count on the host and `gradle/version-code.init.gradle`
+  (mounted at `/gradle-init`, applied with `-I`) stamps it onto every Android
+  application variant. Without it a hardcoded `versionCode = 1` makes rebuilds
+  invisible to F-Droid. Rationale, the `onVariants`-not-`defaultConfig` decision, and
+  the linear-history caveat: `README.md` → "Automatic `versionCode`". Put any future
+  build-wide Gradle behaviour in `gradle/` as another init script rather than copying
+  it into each app.
 - Add a new app's SDK level to `Dockerfile.builder` (a `platforms;android-NN` +
   `build-tools;NN.x` line) and rebuild the image when its `compileSdk` isn't 34 or 35.
 

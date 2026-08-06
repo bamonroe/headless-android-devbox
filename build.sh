@@ -20,6 +20,7 @@
 # The mount contract (see Dockerfile.builder):
 #   <project-parent>         -> /workspace     (source in, APK out)
 #   <project-dir>/.gradle-cache -> /gradle-cache (this project's OWN persistent cache)
+#   /data/android/gradle     -> /gradle-init:ro (init scripts applied to every build)
 # The SDK is baked into the image, private per container — nothing shared, no collisions.
 if [ -z "${BASH_VERSION:-}" ]; then
   exec bash "$0" "$@"
@@ -54,6 +55,26 @@ if [ "$#" -eq 0 ]; then
   set -- :app:assembleDebug
 fi
 
+# Monotonic versionCode for every app, computed here rather than in each project's
+# build file. F-Droid/Android only offer an update when the versionCode goes UP, so a
+# hardcoded `versionCode = 1` means rebuilds silently overwrite the same release slot
+# and no client ever sees them. gradle/version-code.init.gradle stamps this onto every
+# Android application variant. Counting commits needs a real repo, so it happens on the
+# host (which always has git and owns the checkout) and rides in as an env var.
+#   BAM_VERSION_CODE=<n>  pin it explicitly     BAM_VERSION_CODE=0  leave the project's own value
+if [ -z "${BAM_VERSION_CODE:-}" ]; then
+  GIT_ROOT="$(git -C "$PROJECT" rev-parse --show-toplevel 2>/dev/null || true)"
+  if [ -n "$GIT_ROOT" ]; then
+    BAM_VERSION_CODE="$(git -C "$GIT_ROOT" rev-list --count HEAD 2>/dev/null || true)"
+  fi
+fi
+export BAM_VERSION_CODE="${BAM_VERSION_CODE:-}"
+if [ -n "$BAM_VERSION_CODE" ] && [ "$BAM_VERSION_CODE" != "0" ]; then
+  echo ">> versionCode=$BAM_VERSION_CODE (git commit count)"
+else
+  echo ">> versionCode: using each project's own value (not a git repo, or BAM_VERSION_CODE=0)"
+fi
+
 # Per-project Gradle cache lives alongside the project (git-ignore it there).
 CACHE="$PROJECT/.gradle-cache"
 mkdir -p "$CACHE"
@@ -68,11 +89,13 @@ echo ">> mount=$PROJECT_PARENT:/workspace  workdir=$WORKDIR"
 docker run --rm \
   --user "$(id -u):$(id -g)" \
   -e HOME=/gradle-cache \
+  -e BAM_VERSION_CODE \
   -v "$PROJECT_PARENT":/workspace \
   -v "$CACHE":/gradle-cache \
+  -v "$SCRIPT_DIR/gradle":/gradle-init:ro \
   -w "$WORKDIR" \
   "$IMAGE" \
-  ./gradlew --no-daemon "$@"
+  ./gradlew --no-daemon -I /gradle-init/version-code.init.gradle "$@"
 
 # Publishable APKs under the project. Instrumentation packages built by
 # connectedAndroidTest land in build/outputs/apk/androidTest/** and are *not* apps —

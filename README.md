@@ -75,6 +75,38 @@ This table is the authoritative list; `build.sh`'s header points here.
 | `BAM_STORE_AAPT2` | store tools | unset | Force a specific `aapt2` binary instead of running it in the builder container. |
 | `BAM_STORE_BUILDER_IMAGE` | store tools | `android-builder:local` | Image used to run `aapt2 dump badging`. Falls back to `BUILDER_IMAGE`. |
 | `BUILDER_IMAGE` | `build.sh`, store tools | `android-builder:local` | The build container image. |
+| `BAM_VERSION_CODE` | `build.sh` | git commit count of the project's repo | Pin the `versionCode` stamped on every app variant. `0` leaves the project's own value alone. |
+
+### Automatic `versionCode` (why your rebuild "doesn't show up" in F-Droid)
+
+F-Droid and Android only offer an update when an APK's **`versionCode` goes up** — the
+`versionName` and any baked-in git hash are display only and have no say in it. An app
+whose build file hardcodes `versionCode = 1` therefore republishes into the same release
+slot on every build, and no client ever sees the new binary.
+
+`build.sh` fixes this for **every** app, so no project has to code it up:
+
+1. On the host it runs `git rev-list --count HEAD` against the project's repo (the host
+   always has git and owns the checkout, which avoids git's "dubious ownership" refusal on
+   a container-mounted repo) and passes the count in as `BAM_VERSION_CODE`.
+2. `gradle/version-code.init.gradle` is mounted read-only at `/gradle-init` and applied
+   with `gradle -I`. It stamps that number onto every output of every Android
+   *application* module via `androidComponents.onVariants`.
+
+`onVariants` rather than `defaultConfig` is deliberate: an init script's `plugins.withId`
+hook runs *before* the project's build file is evaluated, so a `defaultConfig` write would
+just be overwritten by the project's own `versionCode = …` line. The variant API runs after
+evaluation and wins.
+
+Two consequences worth knowing:
+
+- The number in an app's `build.gradle.kts` is no longer what ships. The build logs the
+  effective value (`>> versionCode = 696 (git commit count) for :app`).
+- A commit count is only monotonic while history is linear. Rebasing, squashing, or
+  building a branch with fewer commits can move it backwards, which Android rejects as a
+  downgrade. Pin `BAM_VERSION_CODE` explicitly if that happens.
+
+Projects outside a git repo, or builds with `BAM_VERSION_CODE=0`, keep their own value.
 
 The pre-merge checkout at `/data/bam-store` is gone; `http://apps.bam/` now
 serves straight out of `store/repo`. Caddy runs as the `/data/caddy-docker` container, so its

@@ -1,0 +1,41 @@
+// Give every app built through /data/android/build.sh a monotonic versionCode,
+// without each project having to code it up.
+//
+// build.sh computes the project's git commit count on the host and passes it in as
+// BAM_VERSION_CODE; this init script (mounted at /gradle-init, applied with -I)
+// stamps it onto every output of every Android *application* module.
+//
+// Why the variant API and not defaultConfig: an init script's plugins.withId hook
+// runs BEFORE the project's own build file is evaluated, so anything we wrote into
+// defaultConfig would be overwritten by the project's `versionCode = ...` line.
+// AndroidComponentsExtension.onVariants runs after evaluation and is the supported
+// override point, so it wins over whatever the build file declared.
+//
+// Opt out for one build with BAM_VERSION_CODE=0. If the project isn't a git repo,
+// build.sh passes nothing and the project's own versionCode stands.
+
+def raw = System.getenv("BAM_VERSION_CODE")
+if (!raw || !raw.trim().isInteger()) {
+    return
+}
+def code = raw.trim().toInteger()
+if (code <= 0) {
+    return
+}
+
+gradle.allprojects { project ->
+    project.plugins.withId("com.android.application") {
+        def androidComponents = project.extensions.findByName("androidComponents")
+        if (androidComponents == null) {
+            project.logger.lifecycle(
+                ">> versionCode override skipped in ${project.path}: no androidComponents extension")
+            return
+        }
+        androidComponents.onVariants(androidComponents.selector().all(), { variant ->
+            variant.outputs.each { output ->
+                output.versionCode.set(code)
+            }
+        })
+        project.logger.lifecycle(">> versionCode = ${code} (git commit count) for ${project.path}")
+    }
+}
