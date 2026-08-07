@@ -1,9 +1,11 @@
 """Run ``aapt2 dump badging`` without requiring a host Android SDK.
 
 Per /data/android/CLAUDE.md the host carries no JDK/SDK/Gradle: the toolchain
-lives in the ``android-builder:local`` image. So metadata extraction runs there
-by default — a throwaway container with the APK's directory bind-mounted
-read-only — and only falls back to a host ``aapt2`` when one happens to exist.
+lives in the ``android-builder:local`` image. Metadata extraction therefore can
+run in a throwaway container with the APK's directory bind-mounted read-only.
+When a host ``aapt2`` exists, including the one Gradle cached for the store
+client, prefer it; starting one container per APK makes full index rebuilds
+look hung.
 
 Knobs:
   BAM_STORE_AAPT2        — an explicit aapt2 binary; used directly, no container.
@@ -36,6 +38,19 @@ def find_host_aapt2() -> str | None:
     if explicit:
         return explicit
     candidates = sorted(glob.glob(os.path.join(SDK_DIR, "build-tools", "*", "aapt2")))
+    store_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    candidates += sorted(glob.glob(os.path.join(
+        store_root,
+        "client",
+        ".gradle-cache",
+        "caches",
+        "*",
+        "transforms",
+        "*",
+        "transformed",
+        "aapt2-*-linux",
+        "aapt2",
+    )))
     if candidates:
         return candidates[-1]
     return shutil.which("aapt2")
@@ -55,10 +70,14 @@ def _dump_in_container(apk: str) -> subprocess.CompletedProcess:
 
 
 def dump_badging(apk: str) -> str:
-    """Return ``aapt2 dump badging`` output for an APK, container-first."""
+    """Return ``aapt2 dump badging`` output for an APK, preferring a host binary."""
     explicit = os.environ.get("BAM_STORE_AAPT2")
     if explicit:
         return _run([explicit, "dump", "badging", apk], apk)
+
+    host = find_host_aapt2()
+    if host:
+        return _run([host, "dump", "badging", apk], apk)
 
     if shutil.which("docker"):
         out = _dump_in_container(apk)
@@ -67,10 +86,6 @@ def dump_badging(apk: str) -> str:
         container_err = out.stderr.strip()
     else:
         container_err = "docker not found on PATH"
-
-    host = find_host_aapt2()
-    if host:
-        return _run([host, "dump", "badging", apk], apk)
 
     raise SystemExit(
         f"could not read {apk}: aapt2 unavailable.\n"
